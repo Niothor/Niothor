@@ -34,6 +34,10 @@ html, body { background:var(--bg); font-family:-apple-system,'Segoe UI',sans-ser
 .field-label { flex:1; color:var(--text); font-size:15px; font-weight:500; }
 .field-input { flex:1.2; background:none; border:none; outline:none; color:var(--text); font-size:15px; text-align:right; font-family:inherit; }
 .field-input::placeholder { color:var(--muted); }
+/* Κρύβει τα βελάκια από τα πεδία αριθμών */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+input[type=number] { -moz-appearance:textfield; }
 textarea.field-input { text-align:left; resize:none; padding:14px; min-height:70px; display:block; width:100%; }
 
 /* DROPDOWN */
@@ -376,7 +380,7 @@ textarea.field-input { text-align:left; resize:none; padding:14px; min-height:70
     </div>
     <div class="scroll-area">
       <div class="offer-header-card">
-        <div class="offer-company">Το Κατάστημά Σας</div>
+        <div class="offer-company">Tsoukalas &amp; Co</div>
         <div class="offer-subtitle">Τέντες · Πέργκολες · Τζάμια</div>
         <div class="offer-meta" id="prev-offernum"></div>
         <div class="offer-meta" id="prev-date"></div>
@@ -400,7 +404,7 @@ textarea.field-input { text-align:left; resize:none; padding:14px; min-height:70
         <div class="sig-placeholder"></div>
       </div>
       <div id="sent-banner" style="display:none" class="sent-banner">✅ Η προσφορά εστάλη!</div>
-      <button class="btn-primary" id="send-btn" onclick="sendEmail()">📧 Αποστολή στον Πελάτη</button>
+      <button class="btn-primary" id="send-btn" onclick="confirmAndSend()">📧 Επιβεβαίωση &amp; Αποστολή</button>
       <button class="btn-outline" onclick="goTo('home')">✚ Προσθήκη Ακόμα Προϊόντος</button>
       <button class="btn-ghost" onclick="newOffer()">+ Νέα Προσφορά</button>
       <div class="spacer"></div>
@@ -411,6 +415,8 @@ textarea.field-input { text-align:left; resize:none; padding:14px; min-height:70
 <script>
 const SHEET_ID   = '1_UOqGssz9277aDqdzezku0mElAun5p5JNco4JfhWfk8';
 const SHEET_NAME = 'Antirides';
+const BUSINESS_EMAIL = 'orders@tsoukalasco.com';
+const BUSINESS_NAME  = 'Tsoukalas & Co';
 
 // ══════════════════════════════════════════════
 // Βάση δεδομένων — ακριβής αντιγραφή από Sheet
@@ -1146,16 +1152,97 @@ function dRow(label,value,bold=false){
   return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value${bold?' bold':''}">${value}</span></div>`;
 }
 
+function confirmAndSend(){
+  const customerEmail = document.getElementById('c-email').value.trim();
+  const first = document.getElementById('c-first').value.trim();
+  const last  = document.getElementById('c-last').value.trim();
+  const msg = `Επιβεβαίωση Αποστολής
+
+Προσφορά για: ${first} ${last}
+Αριθμός: ${currentOfferNum}
+Σύνολο: ${(cart.reduce((s,i)=>s+i.price,0)*(1+VAT)).toFixed(2)}€
+
+Θα ανοιχτεί ο παρακάτω τελεφωνητής για να στείλετε τα email:
+${customerEmail ? '- Email πελάτη: ' + customerEmail : '⚠️ Δεν έχει δοθεί email πελάτη — θα σταλεί μόνο στην επιχείρηση'}
+- Email επιχείρησης: ${BUSINESS_EMAIL}
+
+Επιβεβαιώνετε;`;
+  if (!confirm(msg)) return;
+  sendEmail();
+}
+
 function sendEmail(){
-  const email=document.getElementById('c-email').value.trim();
-  if(!email){alert('Δεν υπάρχει email πελάτη.');return;}
+  const g = id => document.getElementById(id)?.value?.trim()||'';
+  const first=g('c-first'), last=g('c-last'), company=g('c-company');
+  const email=g('c-email'), mobile=g('c-mobile'), phone=g('c-phone');
+  const address=g('c-address'), city=g('c-city'), afm=g('c-afm'), notes=g('c-notes');
+  const net  = cart.reduce((s,i)=>s+i.price,0);
+  const vat  = net*VAT;
+  const total= net+vat;
+  const dateStr = new Date().toLocaleDateString('el-GR');
+
+  // ── Γραμμές email πελάτη και επιχείρησης ────────────
+  let bodyCustomer = `Προσφορά: ${currentOfferNum}\nΗμερομηνία: ${dateStr}\n\n`;
+  bodyCustomer += `Στοιχεία πελάτη:\n`;
+  bodyCustomer += `Ονοματεπώνυμο: ${first} ${last}\n`;
+  if(company)  bodyCustomer += `Εταιρεία: ${company}\n`;
+  if(mobile)   bodyCustomer += `Κινητό: ${mobile}\n`;
+  if(phone)    bodyCustomer += `Τηλ: ${phone}\n`;
+  if(address||city) bodyCustomer += `Διεύθυνση: ${[address,city].filter(Boolean).join(', ')}\n`;
+  if(afm)      bodyCustomer += `ΑΦΜ: ${afm}\n`;
+  bodyCustomer += `\n--- Προϊόντα ---\n`;
+  cart.forEach((item,i)=>{
+    bodyCustomer += `\n${i+1}. ${item.fullName}\n`;
+    bodyCustomer += `   Διαστάσεις: ${item.dims.width}cm × ${item.dims.projection||item.dims.height||0}cm\n`;
+    if(item.fabric) bodyCustomer += `   Υφάσμα: ${item.fabric}\n`;
+    if(item.notes)  bodyCustomer += `   Σημειώσεις: ${item.notes}\n`;
+    bodyCustomer += `   Τιμή: ${item.price.toFixed(2)}€\n`;
+  });
+  bodyCustomer += `\nΚαθαρή Αξία: ${net.toFixed(2)}€\nΦΠΑ 24%: ${vat.toFixed(2)}€\nΣΥΝΟΛΟ: ${total.toFixed(2)}€\n`;
+  if(notes) bodyCustomer += `\nΣημειώσεις: ${notes}\n`;
+
+  // ── Συμπληρωματικό email παραγωγής ──────────────────
+  let bodyProduction = `=== ΠΑΡΑΓΓΕΛΙΑ ΠΑΡΑΓΩΓΗΣ ===\nΑρ. Προσφ.: ${currentOfferNum} | Ημ/νία: ${dateStr}\n\n`;
+  bodyProduction += `ΠΕΛΑΤΗΣ: ${first} ${last}`;
+  if(company) bodyProduction += ` | ${company}`;
+  if(mobile)  bodyProduction += ` | Τηλ: ${mobile}`;
+  bodyProduction += `\n\n`;
+  cart.forEach((item,i)=>{
+    bodyProduction += `--- Προϊόν ${i+1}: ${item.fullName} ---\n`;
+    bodyProduction += `Διαστάσεις: ${item.dims.width}cm × ${item.dims.projection||item.dims.height||0}cm\n`;
+    if(item.fabric) bodyProduction += `Υφάσμα: ${item.fabric}\n`;
+    // Στοιχεία παραγωγής αν υπάρχουν
+    if(item.production){
+      const p = item.production;
+      if(p.sheets !== undefined){
+        bodyProduction += `Φύλλα: ${p.sheets} φύλλα × ${(p.projCm||0)+70}cm`;
+        if(p.tsonta>0.5) bodyProduction += ` + τσόντα ${p.tsonta.toFixed(1)}cm × ${(p.projCm||0)+70}cm`;
+        bodyProduction += `\n`;
+      }
+    }
+    if(item.notes) bodyProduction += `Σημειώσεις: ${item.notes}\n`;
+    bodyProduction += `\n`;
+  });
+  bodyProduction += `Καθαρή Αξία: ${net.toFixed(2)}€ | ΦΠΑ: ${vat.toFixed(2)}€ | ΣΥΝΟΛΟ: ${total.toFixed(2)}€\n`;
+
+  const subj = encodeURIComponent(`Προσφορά ${currentOfferNum} - ${first} ${last}`);
+  const subjProd = encodeURIComponent(`[ΠΑΡΑΓΩΓΗ] ${currentOfferNum} - ${first} ${last}`);
+
+  // Ανοίγαμε email παραγωγής
+  const mailProd = `mailto:${BUSINESS_EMAIL}?subject=${subjProd}&body=${encodeURIComponent(bodyProduction)}`;
+  window.location.href = mailProd;
+
+  // Μετά από 1.5s, ανοίγαμε και email πελάτη (flag αν έχει email)
+  if(email){
+    setTimeout(()=>{
+      const mailCustomer = `mailto:${email}?subject=${subj}&body=${encodeURIComponent(bodyCustomer)}`;
+      window.open(mailCustomer);
+    }, 1500);
+  }
+
+  document.getElementById('sent-banner').style.display='block';
   const btn=document.getElementById('send-btn');
-  btn.textContent='Αποστολή...'; btn.disabled=true;
-  setTimeout(()=>{
-    document.getElementById('sent-banner').style.display='block';
-    btn.style.display='none';
-    alert(`✅ DEMO: Η προσφορά θα στελνόταν στο ${email}`);
-  },1200);
+  btn.disabled=true; btn.textContent='✅ Απεστάλθη';
 }
 
 function newOffer(){
