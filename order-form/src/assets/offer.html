@@ -404,7 +404,8 @@ textarea.field-input { text-align:left; resize:none; padding:14px; min-height:70
         <div class="sig-placeholder"></div>
       </div>
       <div id="sent-banner" style="display:none" class="sent-banner">✅ Η προσφορά εστάλη!</div>
-      <button class="btn-primary" id="send-btn" onclick="confirmAndSend()">📧 Επιβεβαίωση &amp; Αποστολή</button>
+      <button class="btn-primary" id="send-btn" onclick="sendToCustomer()">📧 Αποστολή στον Πελάτη</button>
+      <button class="btn-primary" id="prod-btn" style="background:var(--greenbg);border:1px solid var(--greenborder);color:var(--green);margin-top:8px" onclick="sendToProduction()">🏭 Email Παραγωγής</button>
       <button class="btn-outline" onclick="goTo('home')">✚ Προσθήκη Ακόμα Προϊόντος</button>
       <button class="btn-ghost" onclick="newOffer()">+ Νέα Προσφορά</button>
       <div class="spacer"></div>
@@ -932,7 +933,14 @@ function calcPrice(){
     document.getElementById('production-alerts').innerHTML=
       `<div class="calc-alert production">🧵 Χρειάζεστε <strong>${sheets} φύλλ${sheets===1?'ο':'α'}</strong> ${f.name} × ${projCm+70} cm`+
       (tsonta>0.5?` + τσόντα <strong>${tsonta.toFixed(1)} cm</strong> × ${projCm+70} cm`:'')+'</div>';
-    lastCalcResult={final,production:{sheets,tsonta,projCm,f,widthCm}};
+    lastCalcResult={
+      final, production:{ sheets, tsonta, projCm, f, widthCm },
+      productionData: {
+        type: 'yfasma',
+        fabric: f.name, fabricWidth: widthCm, fabricHeight: projCm+70,
+        sheets, tsonta: tsonta > 0.5 ? tsonta : 0,
+      }
+    };
     showResult(final,minApplied);
     return;
   }
@@ -1024,8 +1032,27 @@ function calcPrice(){
       `<div class="calc-alert">🔩 Άξονας & Αντίβαρο: <strong>${axonasCm.toFixed(1)} cm</strong> | ${numSeta} Σετ Αντιρίδας | ${numSeta} Σωλήνες <strong>${solinaCm} cm</strong></div>`+
       `<div class="calc-alert production">🧵 <strong>${sheets} φύλλ${sheets===1?'ο':'α'}</strong> ${f.name} × ${fabricHeightCm} cm`+
       (tsonta>0.5?` + τσόντα <strong>${tsonta.toFixed(1)} cm</strong>`:'')+'</div>';
-    lastCalcResult={final,total};
-    showResult(final,false);
+    lastCalcResult={
+      final, total,
+      productionData: {
+        type: 'antirides',
+        mechanism: opt.motor ? DB.motor.name : opt.entatiras ? 'Εντατήρας' : mech?.name,
+        kouzineto: (!opt.motor && !opt.entatiras) ? '1 τεμ.' : null,
+        axon: axon.name, axonCm: axonasCm,
+        antivaro: DB.antivaro.name, antivaroCm: axonasCm,
+        numSeta, solinaCm,
+        strifonia: totalStrifonia > 0 ? totalStrifonia + ' τεμ.' : null,
+        oupa: totalStrifonia > 0 ? totalStrifonia + ' τεμ.' : null,
+        tapes: '2 τεμ.',
+        manivela: (!opt.motor && sel.manivela) ? sel.manivela.name : null,
+        xouftaAloum: (opt.xoufta && xAloum) ? qtyXoufta + ' τεμ.' : null,
+        xouftaImanta: (opt.xouftaImanta && xImanta) ? qtyImanta + ' τεμ.' : null,
+        fabric: f.name, fabricWidth: fabricWidthCm, fabricHeight: fabricHeightCm,
+        sheets, tsonta: tsonta > 0.5 ? tsonta : 0,
+        thiki: sel.thiki?.name||null, glossa: sel.glossa?.name||null, typosGlossis: sel.typosGlossis?.name||null,
+      }
+    };
+    showResult(final, false);
     return;
   }
 
@@ -1073,7 +1100,9 @@ function _buildCartItem(){
     dims:{width:widthCm,projection:projCm}, secondKey:'projection', quantity:currentQty,
     fabric:sel.fabric?.name||'', color:'',
     notes:document.getElementById('pf-notes').value.trim(),
-    price:window._currentPrice, sub, production:lastCalcResult?.production||null,
+    price:window._currentPrice, sub,
+    production:lastCalcResult?.production||null,
+    productionData:lastCalcResult?.productionData||null,
   };
 }
 
@@ -1144,6 +1173,8 @@ function goToPreview(){
   if(cnotes) document.getElementById('prev-notes').textContent=cnotes;
   const btn=document.getElementById('send-btn');
   btn.style.display='block'; btn.disabled=false; btn.textContent='📧 Αποστολή στον Πελάτη';
+  const pbtn=document.getElementById('prod-btn');
+  pbtn.style.display='block'; pbtn.disabled=false; pbtn.textContent='🏭 Email Παραγωγής';
   document.getElementById('sent-banner').style.display='none';
   goTo('preview');
 }
@@ -1152,98 +1183,149 @@ function dRow(label,value,bold=false){
   return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value${bold?' bold':''}">${value}</span></div>`;
 }
 
-function confirmAndSend(){
-  const customerEmail = document.getElementById('c-email').value.trim();
-  const first = document.getElementById('c-first').value.trim();
-  const last  = document.getElementById('c-last').value.trim();
-  const msg = `Επιβεβαίωση Αποστολής
-
-Προσφορά για: ${first} ${last}
-Αριθμός: ${currentOfferNum}
-Σύνολο: ${(cart.reduce((s,i)=>s+i.price,0)*(1+VAT)).toFixed(2)}€
-
-Θα ανοιχτεί ο παρακάτω τελεφωνητής για να στείλετε τα email:
-${customerEmail ? '- Email πελάτη: ' + customerEmail : '⚠️ Δεν έχει δοθεί email πελάτη — θα σταλεί μόνο στην επιχείρηση'}
-- Email επιχείρησης: ${BUSINESS_EMAIL}
-
-Επιβεβαιώνετε;`;
-  if (!confirm(msg)) return;
-  sendEmail();
-}
-
-function sendEmail(){
+function _buildEmailBodies(){
   const g = id => document.getElementById(id)?.value?.trim()||'';
   const first=g('c-first'), last=g('c-last'), company=g('c-company');
   const email=g('c-email'), mobile=g('c-mobile'), phone=g('c-phone');
   const address=g('c-address'), city=g('c-city'), afm=g('c-afm'), notes=g('c-notes');
-  const net  = cart.reduce((s,i)=>s+i.price,0);
-  const vat  = net*VAT;
-  const total= net+vat;
-  const dateStr = new Date().toLocaleDateString('el-GR');
+  const net=cart.reduce((s,i)=>s+i.price,0), vat=net*VAT, total=net+vat;
+  const dateStr=new Date().toLocaleDateString('el-GR');
 
-  // ── Γραμμές email πελάτη και επιχείρησης ────────────
-  let bodyCustomer = `Προσφορά: ${currentOfferNum}\nΗμερομηνία: ${dateStr}\n\n`;
-  bodyCustomer += `Στοιχεία πελάτη:\n`;
-  bodyCustomer += `Ονοματεπώνυμο: ${first} ${last}\n`;
-  if(company)  bodyCustomer += `Εταιρεία: ${company}\n`;
-  if(mobile)   bodyCustomer += `Κινητό: ${mobile}\n`;
-  if(phone)    bodyCustomer += `Τηλ: ${phone}\n`;
-  if(address||city) bodyCustomer += `Διεύθυνση: ${[address,city].filter(Boolean).join(', ')}\n`;
-  if(afm)      bodyCustomer += `ΑΦΜ: ${afm}\n`;
-  bodyCustomer += `\n--- Προϊόντα ---\n`;
+  let bCustomer=`Προσφορά: ${currentOfferNum}\nΗμερομηνία: ${dateStr}\n\nΣτοιχεία πελάτη:\n`;
+  bCustomer+=`Ονοματεπώνυμο: ${first} ${last}\n`;
+  if(company)      bCustomer+=`Εταιρεία: ${company}\n`;
+  if(email)        bCustomer+=`Email: ${email}\n`;
+  if(mobile)       bCustomer+=`Κινητό: ${mobile}\n`;
+  if(phone)        bCustomer+=`Τηλ: ${phone}\n`;
+  if(address||city)bCustomer+=`Διεύθυνση: ${[address,city].filter(Boolean).join(', ')}\n`;
+  if(afm)          bCustomer+=`ΑΦΜ: ${afm}\n`;
+  bCustomer+=`\n--- Προϊόντα ---\n`;
   cart.forEach((item,i)=>{
-    bodyCustomer += `\n${i+1}. ${item.fullName}\n`;
-    bodyCustomer += `   Διαστάσεις: ${item.dims.width}cm × ${item.dims.projection||item.dims.height||0}cm\n`;
-    if(item.fabric) bodyCustomer += `   Υφάσμα: ${item.fabric}\n`;
-    if(item.notes)  bodyCustomer += `   Σημειώσεις: ${item.notes}\n`;
-    bodyCustomer += `   Τιμή: ${item.price.toFixed(2)}€\n`;
+    bCustomer+=`\n${i+1}. ${item.fullName}\n`;
+    bCustomer+=`   Διαστάσεις: ${item.dims.width}cm × ${item.dims.projection||item.dims.height||0}cm\n`;
+    if(item.fabric) bCustomer+=`   Υφάσμα: ${item.fabric}\n`;
+    if(item.notes)  bCustomer+=`   Σημειώσεις: ${item.notes}\n`;
+    bCustomer+=`   Τιμή: ${item.price.toFixed(2)}€\n`;
   });
-  bodyCustomer += `\nΚαθαρή Αξία: ${net.toFixed(2)}€\nΦΠΑ 24%: ${vat.toFixed(2)}€\nΣΥΝΟΛΟ: ${total.toFixed(2)}€\n`;
-  if(notes) bodyCustomer += `\nΣημειώσεις: ${notes}\n`;
+  bCustomer+=`\nΚαθαρή Αξία: ${net.toFixed(2)}€\nΦΠΑ 24%: ${vat.toFixed(2)}€\nΣΥΝΟΛΟ: ${total.toFixed(2)}€\n`;
+  if(notes) bCustomer+=`\nΣημειώσεις: ${notes}\n`;
 
-  // ── Συμπληρωματικό email παραγωγής ──────────────────
-  let bodyProduction = `=== ΠΑΡΑΓΓΕΛΙΑ ΠΑΡΑΓΩΓΗΣ ===\nΑρ. Προσφ.: ${currentOfferNum} | Ημ/νία: ${dateStr}\n\n`;
-  bodyProduction += `ΠΕΛΑΤΗΣ: ${first} ${last}`;
-  if(company) bodyProduction += ` | ${company}`;
-  if(mobile)  bodyProduction += ` | Τηλ: ${mobile}`;
-  bodyProduction += `\n\n`;
+  let bProd=`=== ΠΑΡΑΓΓΕΛΙΑ ΠΑΡΑΓΩΓΗΣ ===\nΑρ. Προσφ.: ${currentOfferNum} | Ημ/νία: ${dateStr}\n\n`;
+  bProd+=`ΠΕΛΑΤΗΣ: ${first} ${last}`;
+  if(company) bProd+=` | ${company}`;
+  if(mobile)  bProd+=` | Τηλ: ${mobile}`;
+  if(email)   bProd+=` | Email: ${email}`;
+  bProd+=`\n\n`;
   cart.forEach((item,i)=>{
-    bodyProduction += `--- Προϊόν ${i+1}: ${item.fullName} ---\n`;
-    bodyProduction += `Διαστάσεις: ${item.dims.width}cm × ${item.dims.projection||item.dims.height||0}cm\n`;
-    if(item.fabric) bodyProduction += `Υφάσμα: ${item.fabric}\n`;
-    // Στοιχεία παραγωγής αν υπάρχουν
+    bProd+=`--- Προϊόν ${i+1}: ${item.fullName} ---\n`;
+    bProd+=`Διαστάσεις: ${item.dims.width}cm × ${item.dims.projection||item.dims.height||0}cm\n`;
+    if(item.fabric) bProd+=`Υφάσμα: ${item.fabric}\n`;
     if(item.production){
-      const p = item.production;
-      if(p.sheets !== undefined){
-        bodyProduction += `Φύλλα: ${p.sheets} φύλλα × ${(p.projCm||0)+70}cm`;
-        if(p.tsonta>0.5) bodyProduction += ` + τσόντα ${p.tsonta.toFixed(1)}cm × ${(p.projCm||0)+70}cm`;
-        bodyProduction += `\n`;
+      const p=item.production;
+      if(p.sheets!==undefined){
+        bProd+=`Φύλλα: ${p.sheets} φύλλα × ${(p.projCm||0)+70}cm`;
+        if(p.tsonta>0.5) bProd+=` + τσόντα ${p.tsonta.toFixed(1)}cm × ${(p.projCm||0)+70}cm`;
+        bProd+=`\n`;
       }
     }
-    if(item.notes) bodyProduction += `Σημειώσεις: ${item.notes}\n`;
-    bodyProduction += `\n`;
+    if(item.notes) bProd+=`Σημειώσεις: ${item.notes}\n`;
+    bProd+=`Τιμή: ${item.price.toFixed(2)}€\n\n`;
   });
-  bodyProduction += `Καθαρή Αξία: ${net.toFixed(2)}€ | ΦΠΑ: ${vat.toFixed(2)}€ | ΣΥΝΟΛΟ: ${total.toFixed(2)}€\n`;
+  bProd+=`Καθαρή Αξία: ${net.toFixed(2)}€ | ΦΠΑ: ${vat.toFixed(2)}€ | ΣΥΝΟΛΟ: ${total.toFixed(2)}€\n`;
+  return { bCustomer, bProd, email, first, last, net, vat, total };
+}
 
-  const subj = encodeURIComponent(`Προσφορά ${currentOfferNum} - ${first} ${last}`);
-  const subjProd = encodeURIComponent(`[ΠΑΡΑΓΩΓΗ] ${currentOfferNum} - ${first} ${last}`);
+function _openMailto(mailto){
+  const a = document.createElement('a');
+  a.href = mailto;
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 
-  // Ανοίγαμε email παραγωγής
-  const mailProd = `mailto:${BUSINESS_EMAIL}?subject=${subjProd}&body=${encodeURIComponent(bodyProduction)}`;
-  window.location.href = mailProd;
-
-  // Μετά από 1.5s, ανοίγαμε και email πελάτη (flag αν έχει email)
-  if(email){
-    setTimeout(()=>{
-      const mailCustomer = `mailto:${email}?subject=${subj}&body=${encodeURIComponent(bodyCustomer)}`;
-      window.open(mailCustomer);
-    }, 1500);
-  }
-
+function sendToCustomer(){
+  const { bCustomer, email, first, last } = _buildEmailBodies();
+  if(!email){ alert('⚠️ Δεν υπάρχει email πελάτη.'); return; }
+  const subj=encodeURIComponent(`Προσφορά ${currentOfferNum} - ${first} ${last}`);
+  _openMailto(`mailto:${email}?subject=${subj}&body=${encodeURIComponent(bCustomer)}`);
   document.getElementById('sent-banner').style.display='block';
   const btn=document.getElementById('send-btn');
-  btn.disabled=true; btn.textContent='✅ Απεστάλθη';
+  btn.disabled=true; btn.textContent='✅ Εστάλη στον Πελάτη';
 }
+
+function sendToProduction(){
+  const g = id => document.getElementById(id)?.value?.trim()||'';
+  const first=g('c-first'), last=g('c-last'), company=g('c-company');
+  const mobile=g('c-mobile'), phone=g('c-phone'), address=g('c-address'), city=g('c-city');
+  const email=g('c-email'), notes=g('c-notes');
+  const dateStr=new Date().toLocaleDateString('el-GR');
+
+  let b=`=== ΠΑΡΑΓΓΕΛΙΑ ΠΑΡΑΓΩΓΗΣ ===\n`;
+  b+=`Αρ. Προσφοράς: ${currentOfferNum}\nΗμερομηνία: ${dateStr}\n\n`;
+  b+=`--- ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ ---\n`;
+  b+=`Ονοματεπώνυμο: ${first} ${last}\n`;
+  if(company)       b+=`Εταιρεία: ${company}\n`;
+  if(mobile)        b+=`Κινητό: ${mobile}\n`;
+  if(phone)         b+=`Τηλ: ${phone}\n`;
+  if(address||city) b+=`Διεύθυνση: ${[address,city].filter(Boolean).join(', ')}\n`;
+  if(email)         b+=`Email: ${email}\n`;
+  b+=`\n`;
+
+  cart.forEach((item,i)=>{
+    b+=`${'='.repeat(40)}\n`;
+    b+=`ΠΡΟΙΟΝ ${i+1}: ${item.fullName}\n`;
+    b+=`Διαστάσεις: ${item.dims.width}cm × ${item.dims.projection||item.dims.height||0}cm\n`;
+    b+=`\n`;
+    const p = item.productionData;
+    if(p && p.type==='antirides'){
+      b+=`-- ΣΙΔΗΡΟΚΑΤΑΣΚΕΥΗ --\n`;
+      if(p.mechanism)     b+=`Μηχανισμός: ${p.mechanism}\n`;
+      if(p.kouzineto)     b+=`Κουζινέτο: ${p.kouzineto}\n`;
+      b+=`Άξονας: ${p.axon} — ${p.axonCm.toFixed(1)}cm\n`;
+      b+=`Αντίβαρο: ${p.antivaro} — ${p.antivaroCm.toFixed(1)}cm\n`;
+      b+=`Σετ Αντιρίδας: ${p.numSeta} σετ\n`;
+      b+=`Κολονάκι: ${p.numSeta} τεμ.\n`;
+      b+=`Σωλήνα Αλουμινίου: ${p.numSeta} × ${p.solinaCm}cm\n`;
+      if(p.strifonia)     b+=`Στριφώνια: ${p.strifonia}\n`;
+      if(p.oupa)          b+=`Ούπα: ${p.oupa}\n`;
+      b+=`Τάπες: ${p.tapes}\n`;
+      if(p.manivela)      b+=`Μανιβέλα: ${p.manivela}\n`;
+      if(p.xouftaAloum)   b+=`Χούφτα Αλουμινίου: ${p.xouftaAloum}\n`;
+      if(p.xouftaImanta)  b+=`Χούφτα Ιμάντας: ${p.xouftaImanta}\n`;
+      if(p.thiki)         b+=`Θήκη: ${p.thiki}\n`;
+      if(p.glossa)        b+=`Γλώσσα: ${p.glossa}\n`;
+      if(p.typosGlossis)  b+=`Τύπος Γλώσσας: ${p.typosGlossis}\n`;
+      b+=`\n-- ΚΟΠΕΣ ΥΦΑΣΜΑΤΟΣ --\n`;
+      b+=`Υφάσμα: ${p.fabric}\n`;
+      b+=`Πλάτος: ${p.fabricWidth.toFixed(1)}cm\n`;
+      b+=`Ύψος: ${p.fabricHeight}cm\n`;
+      b+=`Φύλλα: ${p.sheets} φύλλα × ${p.fabricHeight}cm\n`;
+      if(p.tsonta>0) b+=`Τσόντα: ${p.tsonta.toFixed(1)}cm × ${p.fabricHeight}cm\n`;
+    } else if(p && p.type==='yfasma'){
+      b+=`-- ΚΟΠΕΣ ΥΦΑΣΜΑΤΟΣ --\n`;
+      b+=`Υφάσμα: ${p.fabric}\n`;
+      b+=`Πλάτος: ${p.fabricWidth}cm\n`;
+      b+=`Ύψος: ${p.fabricHeight}cm\n`;
+      b+=`Φύλλα: ${p.sheets} φύλλα × ${p.fabricHeight}cm\n`;
+      if(p.tsonta>0) b+=`Τσόντα: ${p.tsonta.toFixed(1)}cm × ${p.fabricHeight}cm\n`;
+    } else {
+      b+=`Υφάσμα: ${item.fabric||'—'}\n`;
+    }
+    if(item.notes) b+=`\nΣημειώσεις: ${item.notes}\n`;
+    b+=`\n`;
+  });
+  if(notes) b+=`=== ΓΕΝΙΚΕΣ ΣΗΜΕΙΩΣΕΙΣ ===\n${notes}\n`;
+
+  const subj=encodeURIComponent(`[ΠΑΡΑΓΩΓΗ] ${currentOfferNum} - ${first} ${last}`);
+  _openMailto(`mailto:${BUSINESS_EMAIL}?subject=${subj}&body=${encodeURIComponent(b)}`);
+  const btn=document.getElementById('prod-btn');
+  btn.disabled=true; btn.textContent='✅ Εστάλη στην Παραγωγή';
+}
+
+function confirmAndSend(){ sendToCustomer(); }
+function sendEmail(){ sendToCustomer(); }
+
 
 function newOffer(){
   cart=[]; currentProduct=null; priceCalculated=false; currentOfferNum=null; lastCalcResult=null;
