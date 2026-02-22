@@ -125,6 +125,21 @@ textarea.field-input { text-align:left; resize:none; padding:14px; min-height:70
 .leaf-item:active { background:rgba(232,162,58,.14); }
 .leaf-name  { color:var(--muted); font-size:15px; }
 .leaf-arrow { color:var(--accent); font-size:20px; font-weight:700; }
+/* BRAND HEADER */
+.brand-header { text-align:center; padding:22px 20px 10px; }
+.brand-logo { max-height:90px; max-width:240px; object-fit:contain; filter:drop-shadow(0 2px 8px rgba(0,0,0,.4)); }
+.brand-logo-fallback { font-size:26px; font-weight:900; color:var(--accent); letter-spacing:.5px; }
+.brand-tagline { color:var(--muted); font-size:13px; margin-top:7px; letter-spacing:.3px; }
+/* PRODUCT GRID TILES */
+.prod-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:10px 10px 14px; }
+.prod-tile { background:var(--card); border:1.5px solid var(--border); border-radius:12px; cursor:pointer; overflow:hidden; transition:transform .12s,border-color .12s,background .12s; display:flex; flex-direction:column; align-items:center; }
+.prod-tile:hover  { border-color:var(--accent); }
+.prod-tile:active { transform:scale(.95); border-color:var(--accent); background:rgba(232,162,58,.08); }
+.prod-tile-img { width:100%; aspect-ratio:1/1; background:var(--subcat); display:flex; align-items:center; justify-content:center; font-size:34px; overflow:hidden; }
+.prod-tile-img img { width:100%; height:100%; object-fit:cover; }
+.prod-tile-name { font-size:11px; font-weight:700; color:var(--text); text-align:center; padding:6px 4px 8px; line-height:1.3; }
+/* OFFER LOGO */
+.offer-logo { max-height:64px; max-width:210px; object-fit:contain; margin-bottom:6px; filter:drop-shadow(0 1px 4px rgba(0,0,0,.25)); }
 
 /* CART */
 .cart-section { padding:0 16px; margin-top:12px; flex-shrink:0; }
@@ -203,6 +218,11 @@ textarea.field-input { text-align:left; resize:none; padding:14px; min-height:70
       <button class="back-btn" style="color:var(--muted);font-size:13px" onclick="newOffer()">🗑 Καθαρισμός</button>
     </div>
     <div class="scroll-area">
+      <div class="brand-header">
+        <img src="https://lh3.googleusercontent.com/d/0BzVeEhCT7VKDSDBUeTJnRXdZRlk" alt="Tsoukalas &amp; Co" class="brand-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <div class="brand-logo-fallback" style="display:none">Tsoukalas &amp; Co</div>
+        <div class="brand-tagline">Τέντες &middot; Πέργκολες &middot; Τζάμια</div>
+      </div>
       <div class="section-label">Στοιχεία Πελάτη</div>
       <div class="info-card">
         <div class="field-row"><label class="field-label">Όνομα <span style="color:var(--accent)">*</span></label><input class="field-input" id="c-first" placeholder="Γιώργης"></div>
@@ -380,7 +400,8 @@ textarea.field-input { text-align:left; resize:none; padding:14px; min-height:70
     </div>
     <div class="scroll-area">
       <div class="offer-header-card">
-        <div class="offer-company">Tsoukalas &amp; Co</div>
+        <img src="https://lh3.googleusercontent.com/d/0BzVeEhCT7VKDSDBUeTJnRXdZRlk" alt="Tsoukalas &amp; Co" class="offer-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <div class="offer-company" style="display:none">Tsoukalas &amp; Co</div>
         <div class="offer-subtitle">Τέντες · Πέργκολες · Τζάμια</div>
         <div class="offer-meta" id="prev-offernum"></div>
         <div class="offer-meta" id="prev-date"></div>
@@ -682,34 +703,56 @@ function goToProducts() {
   saveState(); renderCart(); goTo('home');
 }
 
+// Εικόνες προϊόντων — συμπλήρωσε με paths μόλις έχεις φωτογραφίες
+const PRODUCT_IMAGES = {
+  // 'tenta_antirides': 'images/antirides.jpg',
+  // 'tenta_yfasma':    'images/yfasma.jpg',
+  // κ.ο.κ.
+};
+
 function buildProductList() {
-  const container=document.getElementById('productList');
-  container.innerHTML='';
-  PRODUCTS.forEach(cat=>{
-    const card=document.createElement('div'); card.className='cat-card';
-    const header=document.createElement('div'); header.className='cat-header';
-    header.innerHTML=`<div class="cat-left"><span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span></div><span class="expand-icon" id="exp-${cat.id}">▸</span>`;
-    const body=document.createElement('div'); body.className='cat-body'; body.style.display='none';
-    cat.subs.forEach(sub=>{
-      if(sub.subs){
-        const sh=document.createElement('div'); sh.className='subcat-header';
-        sh.innerHTML=`<span class="subcat-name">${sub.name}</span><span class="expand-icon" id="exp-${sub.id}">▸</span>`;
-        const sb=document.createElement('div'); sb.style.display='none';
-        sub.subs.forEach(leaf=>sb.appendChild(makeLeaf(leaf,cat)));
-        sh.onclick=()=>{const o=sb.style.display!=='none';sb.style.display=o?'none':'block';document.getElementById('exp-'+sub.id).textContent=o?'▸':'▾';};
-        body.appendChild(sh);body.appendChild(sb);
-      } else {body.appendChild(makeLeaf(sub,cat));}
+  const container = document.getElementById('productList');
+  container.innerHTML = '';
+  PRODUCTS.forEach(cat => {
+    const card   = document.createElement('div'); card.className = 'cat-card';
+    const header = document.createElement('div'); header.className = 'cat-header';
+    header.innerHTML = `<div class="cat-left"><span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span></div><span class="expand-icon" id="exp-${cat.id}">▸</span>`;
+    const body = document.createElement('div'); body.className = 'cat-body'; body.style.display = 'none';
+    const grid = document.createElement('div'); grid.className = 'prod-grid';
+    cat.subs.forEach(sub => {
+      if (sub.subs) {
+        // nested sub-category: label spanning full width + tiles for children
+        const lbl = document.createElement('div');
+        lbl.style.cssText = 'grid-column:1/-1;padding:8px 4px 2px;color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px';
+        lbl.textContent = sub.name;
+        grid.appendChild(lbl);
+        sub.subs.forEach(leaf => grid.appendChild(makeTile(leaf, cat)));
+      } else {
+        grid.appendChild(makeTile(sub, cat));
+      }
     });
-    header.onclick=()=>{const o=body.style.display!=='none';body.style.display=o?'none':'block';document.getElementById('exp-'+cat.id).textContent=o?'▸':'▾';};
-    card.appendChild(header);card.appendChild(body);container.appendChild(card);
+    body.appendChild(grid);
+    header.onclick = () => { const o = body.style.display !== 'none'; body.style.display = o ? 'none' : 'block'; document.getElementById('exp-' + cat.id).textContent = o ? '▸' : '▾'; };
+    card.appendChild(header); card.appendChild(body); container.appendChild(card);
   });
 }
 
-function makeLeaf(product,category){
-  const el=document.createElement('div'); el.className='leaf-item';
-  el.innerHTML=`<span class="leaf-name">${product.name}</span><span class="leaf-arrow">›</span>`;
-  el.onclick=()=>selectProduct(product,category);
-  return el;
+function makeTile(product, category) {
+  const tile   = document.createElement('div'); tile.className = 'prod-tile';
+  const imgBox = document.createElement('div'); imgBox.className = 'prod-tile-img';
+  const imgSrc = PRODUCT_IMAGES[product.id];
+  if (imgSrc) {
+    const img = document.createElement('img'); img.src = imgSrc; img.alt = product.name;
+    img.onerror = () => { img.remove(); imgBox.textContent = category.icon || '📦'; };
+    imgBox.appendChild(img);
+  } else {
+    imgBox.textContent = category.icon || '📦';
+  }
+  const lbl = document.createElement('div'); lbl.className = 'prod-tile-name';
+  lbl.textContent = product.name;
+  tile.appendChild(imgBox); tile.appendChild(lbl);
+  tile.onclick = () => selectProduct(product, category);
+  return tile;
 }
 
 function selectProduct(product,category){
