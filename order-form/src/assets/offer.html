@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Προσφορές App</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#0F1923; --card:#1A2736; --border:#243447;
+  --accent:#E8A23A; --text:#F0EDE8; --muted:#8A9BB0;
+  --green:#7ABF7A; --greenbg:#1A2F1A; --greenborder:#2D5C2D;
+  --blue:#5B9BD5; --bluebg:#1A2436; --blueborder:#2D4060;
+  --subcat:#1F3147; --error:#E85454;
+}
+html, body { background:var(--bg); font-family:-apple-system,'Segoe UI',sans-serif; color:var(--text); }
+
+.phone-shell { max-width:600px; margin:0 auto; padding-bottom:80px; }
+
+.screen { display:none; }
+.screen.active { display:block; }
+
+.scroll-area { padding:0 16px 32px; }
+
+.screen-header { padding:16px 20px 12px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:var(--bg); z-index:10; border-bottom:1px solid var(--border); margin-bottom:12px; }
+.screen-title { color:var(--text); font-size:22px; font-weight:800; }
+.back-btn { color:var(--accent); font-size:17px; font-weight:600; background:none; border:none; cursor:pointer; padding:6px 10px; }
+
+.section-label { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin:10px 0 7px; }
+
+.info-card { background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:14px; overflow:hidden; }
+.field-row { display:flex; align-items:center; padding:13px 16px; border-bottom:1px solid var(--border); }
+.field-row:last-child { border-bottom:none; }
+.field-label { flex:1; color:var(--text); font-size:15px; font-weight:500; }
+.field-input { flex:1.2; background:none; border:none; outline:none; color:var(--text); font-size:15px; text-align:right; font-family:inherit; }
+.field-input::placeholder { color:var(--muted); }
+textarea.field-input { text-align:left; resize:none; padding:14px; min-height:70px; display:block; width:100%; }
+
+/* DROPDOWN */
+.dropdown-wrap { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:14px; }
+.dropdown-selected { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; cursor:pointer; }
+.dropdown-placeholder { color:var(--muted); font-size:15px; }
+.dropdown-sel-main { color:var(--text); font-size:15px; font-weight:600; }
+.dropdown-sel-sub  { color:var(--green); font-size:12px; margin-top:2px; }
+.dropdown-chevron  { color:var(--accent); font-size:18px; font-weight:700; transition:transform .2s; flex-shrink:0; }
+.dropdown-chevron.open { transform:rotate(90deg); }
+.dropdown-list { display:none; border-top:1px solid var(--border); }
+.dropdown-list.open { display:block; }
+.dropdown-option { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .12s; }
+.dropdown-option:last-child { border-bottom:none; }
+.dropdown-option:hover { background:rgba(232,162,58,.07); }
+.dropdown-option.active { background:rgba(122,191,122,.08); }
+.dopt-name  { color:var(--text); font-size:14px; }
+.dopt-price { color:var(--muted); font-size:12px; }
+.dropdown-option.active .dopt-name  { color:var(--green); font-weight:700; }
+.dropdown-option.active .dopt-price { color:var(--green); }
+.dopt-check { color:var(--green); font-weight:700; opacity:0; font-size:14px; }
+.dropdown-option.active .dopt-check { opacity:1; }
+
+/* TOGGLE (optional items) */
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; border-bottom:1px solid var(--border); }
+.toggle-row:last-child { border-bottom:none; }
+.toggle-label { color:var(--text); font-size:15px; font-weight:500; flex:1; }
+.toggle-sub { color:var(--muted); font-size:12px; margin-top:1px; }
+.toggle-switch { width:44px; height:26px; background:var(--border); border-radius:13px; position:relative; cursor:pointer; transition:background .2s; flex-shrink:0; }
+.toggle-switch.on { background:var(--accent); }
+.toggle-knob { width:20px; height:20px; background:white; border-radius:10px; position:absolute; top:3px; left:3px; transition:transform .2s; }
+.toggle-switch.on .toggle-knob { transform:translateX(18px); }
+
+/* SETA QUESTION */
+.seta-question { background:#1C2A3A; border:1px solid var(--accent); border-radius:12px; padding:16px; margin-bottom:14px; }
+.seta-q-title { color:var(--accent); font-size:13px; font-weight:700; margin-bottom:12px; }
+.seta-options { display:flex; gap:8px; flex-wrap:wrap; }
+.seta-opt { background:var(--border); border:1.5px solid var(--border); border-radius:10px; padding:10px 16px; cursor:pointer; color:var(--text); font-size:15px; font-weight:600; transition:all .15s; }
+.seta-opt:hover { border-color:var(--accent); }
+.seta-opt.active { background:rgba(232,162,58,.15); border-color:var(--accent); color:var(--accent); }
+.simple-list { display:flex; flex-direction:column; gap:4px; }
+.simple-pill { background:var(--border); border:1.5px solid var(--border); border-radius:8px; padding:6px 10px; cursor:pointer; color:var(--text); font-size:13px; text-align:left; transition:all .15s; white-space:nowrap; }
+.simple-pill:hover { border-color:var(--accent); }
+.simple-pill.active { background:rgba(232,162,58,.15); border-color:var(--accent); color:var(--accent); }
+
+/* CALC BREAKDOWN */
+.calc-section { margin-bottom:14px; }
+.calc-card { border-radius:12px; overflow:hidden; margin-bottom:8px; }
+.calc-card-header { padding:10px 16px; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+.calc-card-header.pricing { background:#1C2A1C; color:var(--green); }
+.calc-card-header.production { background:#1A2436; color:var(--blue); }
+.calc-row { display:flex; justify-content:space-between; padding:9px 16px; border-bottom:1px solid var(--border); background:var(--card); }
+.calc-row:last-child { border-bottom:none; }
+.calc-label { color:var(--muted); font-size:13px; }
+.calc-value { color:var(--text); font-size:13px; font-weight:600; }
+.calc-value.highlight { color:var(--green); }
+.calc-value.blue { color:var(--blue); }
+.calc-alert { background:#1C2A1C; border:1px solid var(--greenborder); border-radius:10px; padding:12px 14px; margin-bottom:8px; color:var(--green); font-size:13px; line-height:1.6; }
+.calc-alert.production { background:var(--bluebg); border-color:var(--blueborder); color:var(--blue); }
+
+/* PRICE RESULT */
+.price-card { background:var(--greenbg); border:1px solid var(--greenborder); border-radius:12px; padding:16px; margin-bottom:14px; text-align:center; }
+.price-label { color:var(--green); font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; }
+.price-value { color:var(--green); font-size:34px; font-weight:800; margin-top:3px; }
+.price-warning { color:var(--error); font-size:12px; margin-top:5px; }
+
+/* CUSTOMER CHIP */
+.customer-chip { background:var(--subcat); border:1px solid var(--border); border-radius:12px; padding:11px 14px; margin:0 0 12px; display:flex; align-items:center; gap:11px; }
+.chip-avatar { width:38px; height:38px; border-radius:19px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:900; color:var(--bg); flex-shrink:0; }
+.chip-name { color:var(--text); font-size:15px; font-weight:700; }
+.chip-sub  { color:var(--muted); font-size:12px; margin-top:1px; }
+
+/* PRODUCT LIST */
+.cat-card { background:var(--card); border:1px solid var(--border); border-radius:14px; margin-bottom:11px; overflow:hidden; }
+.cat-header { display:flex; align-items:center; justify-content:space-between; padding:15px 16px; cursor:pointer; user-select:none; }
+.cat-left { display:flex; align-items:center; gap:12px; }
+.cat-icon { font-size:22px; }
+.cat-name { color:var(--text); font-size:17px; font-weight:700; }
+.expand-icon { color:var(--accent); font-size:18px; font-weight:700; }
+.cat-body { border-top:1px solid var(--border); }
+.subcat-header { display:flex; align-items:center; justify-content:space-between; padding:11px 20px; background:var(--subcat); border-bottom:1px solid var(--border); cursor:pointer; }
+.subcat-name { color:var(--text); font-size:15px; font-weight:600; }
+.leaf-item { display:flex; align-items:center; justify-content:space-between; padding:12px 24px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .12s; }
+.leaf-item:hover  { background:rgba(232,162,58,.07); }
+.leaf-item:active { background:rgba(232,162,58,.14); }
+.leaf-name  { color:var(--muted); font-size:15px; }
+.leaf-arrow { color:var(--accent); font-size:20px; font-weight:700; }
+
+/* CART */
+.cart-section { padding:0 16px; margin-top:12px; flex-shrink:0; }
+.cart-item-row { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.cart-item-info { flex:1; }
+.cart-item-name  { color:var(--text); font-size:14px; font-weight:600; }
+.cart-item-dims  { color:var(--muted); font-size:12px; margin-top:2px; }
+.cart-item-price { color:var(--green); font-size:15px; font-weight:700; white-space:nowrap; }
+.cart-item-del   { background:none; border:none; color:var(--error); font-size:20px; cursor:pointer; padding:0 4px; }
+
+.view-cart-bar { background:var(--accent); border-radius:14px; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:transform .15s; position:fixed; bottom:12px; left:50%; transform:translateX(-50%); width:calc(100% - 32px); max-width:568px; z-index:100; box-shadow:0 4px 24px rgba(232,162,58,.5); }
+.view-cart-left  { color:var(--bg); font-size:15px; font-weight:700; }
+.view-cart-total { color:var(--bg); font-size:18px; font-weight:900; }
+
+/* PREVIEW */
+.offer-header-card { background:var(--accent); border-radius:16px; padding:18px 20px; margin:10px 0 18px; text-align:center; }
+.offer-company  { font-size:21px; font-weight:900; color:var(--bg); }
+.offer-subtitle { font-size:12px; color:#5A3A10; margin:2px 0 10px; }
+.offer-meta     { font-size:13px; font-weight:700; color:var(--bg); margin-top:2px; }
+.detail-row { display:flex; justify-content:space-between; align-items:flex-start; padding:10px 16px; border-bottom:1px solid var(--border); }
+.detail-row:last-child { border-bottom:none; }
+.detail-label { color:var(--muted); font-size:13px; flex:1; }
+.detail-value { color:var(--text); font-size:13px; text-align:right; flex:1.3; }
+.detail-value.bold { font-weight:700; }
+.item-card { background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:10px; overflow:hidden; }
+.item-card-header { background:var(--subcat); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; }
+.item-card-name  { color:var(--text); font-size:14px; font-weight:700; }
+.item-card-price { color:var(--green); font-size:15px; font-weight:800; }
+.production-card { background:var(--bluebg); border:1px solid var(--blueborder); border-radius:12px; margin-bottom:10px; overflow:hidden; }
+.production-header { background:#1E3050; padding:10px 16px; }
+.production-title { color:var(--blue); font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+.total-row { display:flex; justify-content:space-between; align-items:center; padding:15px 16px; background:var(--greenbg); }
+.total-label { color:var(--green); font-size:15px; font-weight:800; }
+.total-value { color:var(--green); font-size:22px; font-weight:900; }
+.signature-box { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 20px; display:flex; flex-direction:column; align-items:flex-end; margin-bottom:14px; }
+.sig-label { color:var(--muted); font-size:12px; margin-bottom:10px; }
+.sig-placeholder { width:140px; height:65px; border:1px dashed var(--border); border-radius:8px; }
+
+/* PRODUCT FORM */
+.product-banner { background:var(--accent); border-radius:14px; padding:16px 20px; margin:10px 0 16px; }
+.product-cat-label { color:#7A5010; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+.product-title { color:var(--bg); font-size:22px; font-weight:800; margin-top:3px; }
+.qty-row { display:flex; align-items:center; justify-content:center; padding:12px; gap:24px; }
+.qty-btn { width:44px; height:44px; border-radius:22px; background:var(--border); border:none; cursor:pointer; color:var(--accent); font-size:24px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.qty-btn:hover { background:#2d4560; }
+.qty-value { color:var(--text); font-size:22px; font-weight:700; min-width:40px; text-align:center; }
+
+/* BUTTONS */
+.btn-primary   { width:100%; background:var(--accent); border:none; border-radius:12px; padding:17px; color:var(--bg); font-size:16px; font-weight:800; cursor:pointer; margin-bottom:11px; font-family:inherit; transition:opacity .15s; }
+.btn-primary:hover { opacity:.9; }
+.btn-primary:disabled { opacity:.5; cursor:default; }
+.btn-secondary { width:100%; background:var(--border); border:none; border-radius:12px; padding:15px; color:var(--accent); font-size:16px; font-weight:700; cursor:pointer; margin-bottom:11px; font-family:inherit; }
+.btn-ghost     { width:100%; background:var(--border); border:none; border-radius:12px; padding:15px; color:var(--text); font-size:15px; font-weight:700; cursor:pointer; margin-bottom:11px; font-family:inherit; }
+.btn-outline   { width:100%; background:none; border:1.5px solid var(--accent); border-radius:12px; padding:15px; color:var(--accent); font-size:15px; font-weight:700; cursor:pointer; margin-bottom:11px; font-family:inherit; }
+.sent-banner   { background:var(--greenbg); border:1px solid var(--greenborder); border-radius:14px; padding:17px; text-align:center; color:var(--green); font-size:17px; font-weight:700; margin-bottom:11px; }
+.spacer { height:36px; }
+/* LOADING */
+.loading-screen { position:fixed; inset:0; background:var(--bg); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+.spinner { width:44px; height:44px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.load-err { background:#2A1A1A; border:1px solid var(--error); border-radius:12px; padding:16px 20px; color:var(--error); font-size:14px; text-align:center; max-width:320px; }
+</style>
+</head>
+<body>
+<div id="loading-screen" class="loading-screen">
+  <div class="spinner"></div>
+  <div style="color:var(--muted);font-size:14px">Φόρτωση τιμοκαταλόγου...</div>
+</div>
+
+<div class="phone-shell">
+
+  <!-- ══════ SCREEN 1: ΠΕΛΑΤΗΣ ══════ -->
+  <div class="screen" id="screen-customer">
+    <div class="screen-header">
+      <span class="screen-title">Νέα Προσφορά</span>
+      <button class="back-btn" style="color:var(--muted);font-size:13px" onclick="newOffer()">🗑 Καθαρισμός</button>
+    </div>
+    <div class="scroll-area">
+      <div class="section-label">Στοιχεία Πελάτη</div>
+      <div class="info-card">
+        <div class="field-row"><label class="field-label">Όνομα <span style="color:var(--accent)">*</span></label><input class="field-input" id="c-first" placeholder="Γιώργης"></div>
+        <div class="field-row"><label class="field-label">Επώνυμο <span style="color:var(--accent)">*</span></label><input class="field-input" id="c-last" placeholder="Παπαδόπουλος"></div>
+        <div class="field-row"><label class="field-label">Εταιρεία</label><input class="field-input" id="c-company" placeholder="προαιρετικό"></div>
+        <div class="field-row"><label class="field-label">Email</label><input class="field-input" id="c-email" placeholder="email@example.com" type="email"></div>
+        <div class="field-row"><label class="field-label">Κινητό</label><input class="field-input" id="c-mobile" placeholder="69X XXXXXXX" type="tel"></div>
+        <div class="field-row"><label class="field-label">Τηλέφωνο</label><input class="field-input" id="c-phone" placeholder="21X XXXXXXX" type="tel"></div>
+        <div class="field-row"><label class="field-label">Διεύθυνση</label><input class="field-input" id="c-address" placeholder="οδός, αριθμός"></div>
+        <div class="field-row"><label class="field-label">Πόλη</label><input class="field-input" id="c-city" placeholder="Αθήνα"></div>
+        <div class="field-row"><label class="field-label">ΑΦΜ</label><input class="field-input" id="c-afm" placeholder="προαιρετικό"></div>
+      </div>
+      <div class="section-label">Σημειώσεις</div>
+      <div class="info-card">
+        <div class="field-row" style="padding:0"><textarea class="field-input" id="c-notes" rows="3" placeholder="Ισχύς, παράδοση, όροι πληρωμής..."></textarea></div>
+      </div>
+      <button class="btn-primary" onclick="goToProducts()">Συνέχεια → Προσθήκη Προϊόντων</button>
+      <div class="spacer"></div>
+    </div>
+  </div>
+
+  <!-- ══════ SCREEN 2: ΛΙΣΤΑ ΠΡΟΪΟΝΤΩΝ ══════ -->
+  <div class="screen" id="screen-home">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goTo('customer')">‹ Πίσω</button>
+      <span class="screen-title">Προϊόντα</span>
+      <div></div>
+    </div>
+    <div class="scroll-area">
+      <div class="customer-chip">
+        <div class="chip-avatar" id="chip-avatar">ΓΠ</div>
+        <div><div class="chip-name" id="chip-name">—</div><div class="chip-sub" id="chip-sub">—</div></div>
+      </div>
+      <div class="cart-section" id="cart-section" style="display:none">
+        <div class="section-label" style="padding:0 0 0 2px">Στην Προσφορά</div>
+        <div id="cart-items-list"></div>
+      </div>
+      <div class="section-label">+ Προσθήκη Προϊόντος</div>
+      <div id="productList"></div>
+      <div class="spacer"></div>
+    </div>
+    <div class="view-cart-bar" id="view-cart-bar" style="display:none" onclick="goToPreview()">
+      <span class="view-cart-left">📄 Δες την Προσφορά</span>
+      <span class="view-cart-total" id="cart-total-display">0.00 €</span>
+    </div>
+  </div>
+
+  <!-- ══════ SCREEN 3: ΦΟΡΜΑ ΠΡΟΪΟΝΤΟΣ ══════ -->
+  <div class="screen" id="screen-product">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goTo('home')">‹ Πίσω</button>
+      <div></div>
+    </div>
+    <div class="scroll-area">
+      <div class="product-banner">
+        <div class="product-cat-label" id="pf-category"></div>
+        <div class="product-title" id="pf-name"></div>
+      </div>
+      <div class="section-label">Διαστάσεις</div>
+      <div class="info-card" id="pf-fields"></div>
+      <div id="antirides-section" style="display:none">
+        <div class="section-label" id="label-mechanism">Μηχανισμός</div>
+        <div id="dd-mechanism"></div>
+        <div class="section-label">Άξονας</div>
+        <div id="dd-axonas"></div>
+        <div id="seta-question" style="display:none">
+          <div class="seta-question">
+            <div class="seta-q-title">⚠️ Τέντα > 500cm — Πόσα σετ αντιρίδας;</div>
+            <div class="seta-options" id="seta-options"></div>
+          </div>
+        </div>
+        <div class="section-label">Προαιρετικά</div>
+        <div class="info-card">
+          <div class="toggle-row" id="toggle-entatiras">
+            <div>
+              <div class="toggle-label">Εντατήρας</div>
+              <div class="toggle-sub" style="color:var(--muted);font-size:12px">Αντικαθιστά μηχανισμό &amp; κουζινέτο</div>
+            </div>
+            <div class="toggle-switch" id="sw-entatiras" onclick="toggleEntatiras()"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Μοτέρ με Αντίληψη Εμποδίου</div>
+              <div class="toggle-sub" style="color:var(--muted);font-size:12px">Αντικαθιστά μηχανισμό, εντατήρα &amp; μανιβέλα</div>
+            </div>
+            <div class="toggle-switch" id="sw-motor" onclick="toggleMotor()"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">Χούφτα Αλουμινίου</div>
+            <input type="number" id="qty-xoufta" class="field-input" style="width:60px;text-align:center;display:none" value="1" min="1" max="10">
+            <div class="toggle-switch" id="sw-xoufta" onclick="toggleSwitch('sw-xoufta')"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">Χούφτα Ιμάντας</div>
+            <input type="number" id="qty-xoufta-imanta" class="field-input" style="width:60px;text-align:center;display:none" value="1" min="1" max="10">
+            <div class="toggle-switch" id="sw-xoufta-imanta" onclick="toggleSwitch('sw-xoufta-imanta')"><div class="toggle-knob"></div></div>
+          </div>
+        </div>
+        <div id="manivela-section">
+          <div class="section-label">Μανιβέλα</div>
+          <div id="dd-manivela"></div>
+        </div>
+        <div id="xeiristirio-section" style="display:none">
+          <div class="section-label">Χειριστήριο</div>
+          <div class="info-card">
+            <div class="field-row">
+              <span class="field-label">Τύπος</span>
+              <input class="field-input" id="pf-xeiristirio" placeholder="π.χ. Radio, Timer...">
+            </div>
+          </div>
+        </div>
+        <div class="section-label">Ύφασμα</div>
+        <div id="dd-fabric-antirides"></div>
+        <div class="section-label">Επιλογές Υφάσματος</div>
+        <div class="info-card" style="display:flex;gap:8px;flex-wrap:wrap;padding:10px">
+          <div style="flex:1;min-width:100px">
+            <div style="color:var(--muted);font-size:11px;margin-bottom:5px">Θήκη</div>
+            <div id="sl-thiki" class="simple-list"></div>
+          </div>
+          <div style="flex:1;min-width:100px">
+            <div style="color:var(--muted);font-size:11px;margin-bottom:5px">Γλώσσα</div>
+            <div id="sl-glossa" class="simple-list"></div>
+          </div>
+          <div style="flex:1;min-width:100px">
+            <div style="color:var(--muted);font-size:11px;margin-bottom:5px">Τύπος Γλώσσας</div>
+            <div id="sl-typosGlossis" class="simple-list"></div>
+          </div>
+        </div>
+      </div>
+      <div id="yfasma-section" style="display:none">
+        <div class="section-label">Επιλογή Πανιού</div>
+        <div id="dd-fabric-yfasma"></div>
+      </div>
+      <div class="section-label">Σημειώσεις</div>
+      <div class="info-card">
+        <div class="field-row" style="padding:0"><textarea class="field-input" id="pf-notes" rows="2" placeholder="Ειδικές απαιτήσεις..."></textarea></div>
+      </div>
+      <div id="price-result" style="display:none">
+        <div class="section-label">Ανάλυση Τιμολόγησης</div>
+        <div class="calc-card">
+          <div class="calc-card-header pricing">💰 Κόστος</div>
+          <div id="pricing-breakdown"></div>
+        </div>
+        <div class="price-card">
+          <div class="price-label">Τελική Τιμή (χωρίς ΦΠΑ)</div>
+          <div class="price-value" id="price-display">0.00 €</div>
+          <div class="price-warning" id="price-warning" style="display:none">⚠️ Εφαρμόστηκε ελάχιστη χρέωση 60€</div>
+        </div>
+        <div id="production-section" style="display:none">
+          <div class="section-label">🏭 Δελτίο Παραγωγής</div>
+          <div class="calc-card">
+            <div class="calc-card-header production">Σιδηροκατασκευή</div>
+            <div id="production-iron"></div>
+          </div>
+          <div class="calc-card">
+            <div class="calc-card-header production">Ύφασμα</div>
+            <div id="production-fabric"></div>
+          </div>
+          <div id="production-alerts"></div>
+        </div>
+      </div>
+      <button class="btn-secondary" onclick="calcPrice()">Υπολόγισε Τιμή</button>
+      <button class="btn-primary" onclick="addToOffer()">✚ Προσθήκη στην Προσφορά</button>
+      <button class="btn-outline" id="add-another-btn" style="display:none" onclick="addAndPickAnother()">✚ Πρόσθεσε &amp; Επιλογή Άλλου</button>
+      <div class="spacer"></div>
+    </div>
+  </div>
+
+  <!-- ══════ SCREEN 4: ΠΡΟΕΠΙΣΚΟΠΗΣΗ ══════ -->
+  <div class="screen" id="screen-preview">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goTo('home')">‹ Πίσω</button>
+      <span class="screen-title" style="font-size:18px">Προσφορά</span>
+      <div style="width:50px"></div>
+    </div>
+    <div class="scroll-area">
+      <div class="offer-header-card">
+        <div class="offer-company">Το Κατάστημά Σας</div>
+        <div class="offer-subtitle">Τέντες · Πέργκολες · Τζάμια</div>
+        <div class="offer-meta" id="prev-offernum"></div>
+        <div class="offer-meta" id="prev-date"></div>
+      </div>
+      <div class="section-label">Στοιχεία Πελάτη</div>
+      <div class="info-card" id="prev-customer"></div>
+      <div class="section-label">Προϊόντα</div>
+      <div id="prev-items"></div>
+      <div class="section-label">Σύνολο</div>
+      <div class="info-card">
+        <div class="detail-row"><span class="detail-label">Καθαρή Αξία</span><span class="detail-value" id="prev-net"></span></div>
+        <div class="detail-row"><span class="detail-label">ΦΠΑ 24%</span><span class="detail-value" id="prev-vat"></span></div>
+        <div class="total-row"><span class="total-label">ΣΥΝΟΛΟ</span><span class="total-value" id="prev-total"></span></div>
+      </div>
+      <div id="prev-notes-section" style="display:none">
+        <div class="section-label">Σημειώσεις</div>
+        <div class="info-card"><div style="padding:14px;color:var(--text);font-size:14px;line-height:1.6" id="prev-notes"></div></div>
+      </div>
+      <div class="signature-box">
+        <div class="sig-label">Σφραγίδα / Υπογραφή</div>
+        <div class="sig-placeholder"></div>
+      </div>
+      <div id="sent-banner" style="display:none" class="sent-banner">✅ Η προσφορά εστάλη!</div>
+      <button class="btn-primary" id="send-btn" onclick="sendEmail()">📧 Αποστολή στον Πελάτη</button>
+      <button class="btn-outline" onclick="goTo('home')">✚ Προσθήκη Ακόμα Προϊόντος</button>
+      <button class="btn-ghost" onclick="newOffer()">+ Νέα Προσφορά</button>
+      <div class="spacer"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID   = '1_UOqGssz9277aDqdzezku0mElAun5p5JNco4JfhWfk8';
+const SHEET_NAME = 'Antirides';
+
+// ══════════════════════════════════════════════
+// Βάση δεδομένων — ακριβής αντιγραφή από Sheet
+// ══════════════════════════════════════════════
+const STATIC_DB = {
+  fabrics: [
+    { id:'TenCateEcru',      name:'Ten Cate Εκρού',     pricePerSqm:19, width:160.4 },
+    { id:'TenCateColor',     name:'Ten Cate Εμπριμέ',   pricePerSqm:22, width:160   },
+    { id:'CalbariEcru',      name:'Calbari Ecru',        pricePerSqm:18, width:160   },
+    { id:'CalbariColor',     name:'Calbari Εμπριμέ',    pricePerSqm:21, width:150   },
+    { id:'Offer',            name:'Προσφοράς',           pricePerSqm:16, width:160   },
+    { id:'Transparent',      name:'Ζελατίνα',            pricePerSqm:20, width:150   },
+    { id:'ParaSattler',      name:'Para/Sattler',        pricePerSqm:23, width:120   },
+    { id:'SattlerLumera',    name:'Sattler Lumera',      pricePerSqm:25, width:120   },
+    { id:'ParaSattlerMAX',   name:'Para/Sattler MAX',    pricePerSqm:30, width:120   },
+  ],
+  mechanisms: [
+    { id:'4r',                  name:'Καρέ 4 Ρουλεμάν',        price:30, width:9.5, strifonia:2 },
+    { id:'Markiza',             name:'Μαρκίζας',                price:20, width:10,  strifonia:2 },
+    { id:'Lamaki',              name:'Λαμάκι',                  price:20, width:10,  strifonia:2 },
+    { id:'Stenoskodithileia',   name:'Στενός Κοντή Θηλειά',     price:20, width:6,   strifonia:2 },
+    { id:'Stenosmakriathileia', name:'Στενός Μακριά Θηλειά',    price:20, width:6,   strifonia:2 },
+  ],
+  axones: [
+    { id:'F48', name:'Φ48', pricePerM:7  },
+    { id:'F60', name:'Φ60', pricePerM:8  },
+    { id:'F70', name:'Φ70', pricePerM:11 },
+    { id:'F78', name:'Φ78', pricePerM:15 },
+    { id:'F85', name:'Φ85', pricePerM:18 },
+  ],
+  entatiras:   { id:'Entatiras', name:'Εντατήρας',           price:65,  width:28, strifonia:10 },
+  motor:       { name:'Μοτέρ Με Χειροκίνηση',               price:300, width:6,  strifonia:2  },
+  antivaro:    { name:'Φ33',  pricePerM:5 },
+  kouzineto:   { price:7, qty:1, strifonia:2 },
+  setAntiridas:{ price:11, strifonia:1 },
+  kolonaki:    { price:6 },
+  solinaAloum: { pricePerM:7 },
+  maniveles:   [
+    { id:'Kanoniki', name:'Κανονική', price:15 },
+    { id:'Kodi',     name:'Κοντή',    price:10 },
+  ],
+  xouftes: [
+    { id:'XouftaAlouminiou', name:'Χούφτα Αλουμινίου', price:20, qty:1, strifonia:2 },
+    { id:'XouftaImanta',     name:'Χούφτα Ιμάντας',    price:50, qty:1, strifonia:2 },
+  ],
+  strifonia:   { price:1 },
+  oupa:        { price:1 },
+  tapes:       { price:1 },
+  minCharge:   60,
+  thiki:        [{ id:'Ράουλο', name:'Ράουλο' }, { id:'Απλή', name:'Απλή' }, { id:'Ριντό', name:'Ριντό' }],
+  glossa:       [{ id:'30άρα',  name:'30άρα'  }, { id:'25άρα', name:'25άρα' }],
+  typosGlossis: [{ id:'Κύμα',   name:'Κύμα'   }, { id:'Ίσια',  name:'Ίσια'  }],
+};
+
+// DB = πάντα deep copy της STATIC_DB — ποτέ reference bugs
+let DB = JSON.parse(JSON.stringify(STATIC_DB));
+
+// ══════════════════════════════════════════════
+// Φόρτωση τιμών από Google Sheet (background)
+// Χρησιμοποιεί gviz JSON API — πιο αξιόπιστο από CSV
+// ══════════════════════════════════════════════
+function gvizVal(cell) {
+  if (!cell) return null;
+  return cell.v !== undefined ? cell.v : null;
+}
+
+async function syncFromSheet() {
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const resp = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    // gviz response ξεκινά με "/*O_o*/\ngoogle.visualization.Query.setResponse("
+    const json = JSON.parse(text.replace(/^[^{]*/, '').replace(/\);?\s*$/, ''));
+    const rows = json.table.rows;
+    const cell = (row, col) => {
+      const c = row.c && row.c[col];
+      return c ? (c.v !== null && c.v !== undefined ? String(c.v).trim() : '') : '';
+    };
+    const num = (row, col) => parseFloat(cell(row, col)) || 0;
+
+    // Νέη DB από sheet
+    const sdb = JSON.parse(JSON.stringify(STATIC_DB)); // ξεκινάμε από static
+    let section = null;
+
+    for (const row of rows) {
+      const c0 = cell(row, 0);
+      const c1 = cell(row, 1);
+      const c2 = num(row, 2);   // price/pricePerSqm/pricePerM
+      const c3 = num(row, 3);   // width
+      const c4 = num(row, 4);   // strifonia / qty
+
+      // Section headers
+      if (c0 === 'Fabrics')      { section = 'fabrics';      sdb.fabrics = [];      continue; }
+      if (c0 === 'Mechanism')    { section = 'mechanism';    sdb.mechanisms = [];   continue; }
+      if (c0 === 'Kouzineta')    { section = 'kouzineta';    continue; }
+      if (c0 === 'Axonas')       { section = 'axonas';       sdb.axones = [];       continue; }
+      if (c0 === 'Antivaro')     { section = 'antivaro';     continue; }
+      if (c0 === 'Antirides')    { section = 'antirides';    continue; }
+      if (c0 === 'Maniveles')    { section = 'maniveles';    sdb.maniveles = [];    continue; }
+      if (c0 === 'Xouftes')      { section = 'xouftes';      sdb.xouftes = [];      continue; }
+      if (c0 === 'Thiki')        { section = 'thiki';        sdb.thiki = [];        continue; }
+      if (c0 === 'Glossa')       { section = 'glossa';       sdb.glossa = [];       continue; }
+      if (c0 === 'TiposGlossas') { section = 'typosGlossis'; sdb.typosGlossis = []; continue; }
+      if (!c0 && !c2) continue;
+
+      switch (section) {
+        case 'fabrics':
+          if (c2) sdb.fabrics.push({ id: c0, name: c1 || c0, pricePerSqm: c2, width: c3 || 160 });
+          break;
+        case 'mechanism':
+          if (c0 === 'Entatiras') {
+            // width από STATIC_DB — το sheet μπορεί να έχει format ημερομηνίας στο κελί
+            const staticEnt = STATIC_DB.entatiras;
+            sdb.entatiras = { id:'Entatiras', name: c1||staticEnt.name, price: c2||staticEnt.price, width: staticEnt.width, strifonia: c4||staticEnt.strifonia };
+          } else if (c0 === 'Motor') {
+            const staticMot = STATIC_DB.motor;
+            sdb.motor = { name: c1||staticMot.name, price: c2||staticMot.price, width: staticMot.width, strifonia: c4||staticMot.strifonia };
+          } else if (c2) {
+            // Βρες το αντίστοιχο από STATIC_DB για το width
+            const staticMech = STATIC_DB.mechanisms.find(m => m.id === c0);
+            sdb.mechanisms.push({ id: c0, name: c1||c0, price: c2, width: staticMech?.width ?? c3, strifonia: c4 });
+          }
+          break;
+        case 'kouzineta':
+          if (c0 === 'Kouzineto' && c2) sdb.kouzineto = { price: c2, qty: 1, strifonia: c4 };
+          break;
+        case 'axonas':
+          if (c2) sdb.axones.push({ id: c0, name: c1 || c0, pricePerM: c2 });
+          break;
+        case 'antivaro':
+          if (c2) sdb.antivaro = { name: c1 || c0, pricePerM: c2 };
+          break;
+        case 'antirides':
+          if (c0 === 'AlluminumPipe' && c2) sdb.solinaAloum = { pricePerM: c2 };
+          else if (c0.startsWith('SetAntiridas') && c2) sdb.setAntiridas = { price: c2, strifonia: c4 };
+          else if (c0 === 'Kolonaki' && c2) sdb.kolonaki = { price: c2 };
+          break;
+        case 'maniveles':
+          if (c2) sdb.maniveles.push({ id: c0, name: c1 || c0, price: c2 });
+          break;
+        case 'xouftes':
+          if (c2) sdb.xouftes.push({ id: c0, name: c1 || c0, price: c2, qty: 1, strifonia: c4 });
+          break;
+        case 'thiki':
+          if (c0) sdb.thiki.push({ id: c0, name: c1 || c0 });
+          break;
+        case 'glossa':
+          if (c0) sdb.glossa.push({ id: c0, name: c1 || c0 });
+          break;
+        case 'typosGlossis':
+          if (c0) sdb.typosGlossis.push({ id: c0, name: c1 || c0 });
+          break;
+      }
+      if (c0 === 'Strifonia' && c2) sdb.strifonia = { price: c2 };
+      if (c0 === 'Oupa'      && c2) sdb.oupa      = { price: c2 };
+      if (c0 === 'Tapes'     && c2) sdb.tapes     = { price: c2 };
+    }
+
+    DB = sdb;
+    // Ανανέωση dropdowns αν ο χρήστης είναι ήδη στη φόρμα
+    if (currentProduct) selectProduct(currentProduct, currentCategory);
+    console.log('✅ DB ενημερώθηκε από Google Sheet');
+  } catch (e) {
+    console.warn('⚠️ Sheet sync απέτυχε, χρήση static DB:', e.message);
+  }
+}
+
+function loadDB() {
+  // Άμεση εκκίνηση με static DB — μηδενική καθυστέρηση
+  DB = JSON.parse(JSON.stringify(STATIC_DB));
+  document.getElementById('loading-screen').style.display = 'none';
+  buildProductList();
+  const hadData = restoreState();
+  if (hadData && cart.length > 0) {
+    const first = (document.getElementById('c-first').value || '').trim();
+    const last  = (document.getElementById('c-last').value  || '').trim();
+    if (first || last) {
+      document.getElementById('chip-avatar').textContent = ((first[0]||'') + (last[0]||'')).toUpperCase();
+      document.getElementById('chip-name').textContent   = (first + ' ' + last).trim();
+      const co = document.getElementById('c-company').value.trim();
+      const em = document.getElementById('c-email').value.trim();
+      const mo = document.getElementById('c-mobile').value.trim();
+      document.getElementById('chip-sub').textContent = co || em || mo || '—';
+    }
+    renderCart();
+    goTo('home');
+  } else {
+    goTo('customer');
+  }
+  // Sync τιμών από Sheet στο background
+  syncFromSheet();
+}
+
+const PRODUCTS = [
+  { id:'tenta', name:'Τέντα', icon:'⛱️', subs:[
+    { id:'tenta_yfasma',    name:'Αλλαγή Υφάσματος',  dims:['width','projection'] },
+    { id:'tenta_antirides', name:'Αντιρίδες',          dims:['width','projection'] },
+    { id:'tenta_katheto',   name:'Κάθετο',             dims:['width','height'] },
+    { id:'tenta_kapotina',  name:'Καποτίνα',           dims:['width','projection'] },
+    { id:'tenta_vega',      name:'Vega',               dims:['width','projection'] },
+    { id:'tenta_kaseta',    name:'Κασέτα',             dims:['width','projection'] },
+  ]},
+  { id:'pergola', name:'Πέργκολα', icon:'🏛️', subs:[
+    { id:'p_pro100',   name:'Pro 100',            dims:['width','depth'] },
+    { id:'p_pro150',   name:'Pro 150',            dims:['width','depth'] },
+    { id:'p_promega',  name:'Pro Mega',           dims:['width','depth'] },
+    { id:'p_kremasti', name:'Κρεμαστή',            dims:['width','depth'] },
+    { id:'p_curved',   name:'Curved',             dims:['width','depth'] },
+    { id:'p_prostand', name:'Pro Standard/Plus',  dims:['width','depth'] },
+    { id:'p_flat',     name:'Flat',               dims:['width','depth'] },
+    { id:'p_biokl',    name:'Βιοκλιματική',        dims:['width','depth'] },
+    { id:'p_opensky',  name:'Open Sky',           dims:['width','depth'] },
+    { id:'p_openroof', name:'Open Roof',          dims:['width','depth'] },
+    { id:'p_stath',    name:'Σταθερές Περσίδες',   dims:['width','depth'] },
+    { id:'p_danai',    name:'Δανάη',               dims:['width','depth'] },
+    { id:'p_balloon',  name:'Balloon',            dims:['width','depth'] },
+  ]},
+  { id:'katheto', name:'Κάθετο Σύστημα', icon:'🪟', subs:[
+    { id:'ks_zip',  name:'Zip',                   dims:['width','height'] },
+    { id:'ks_bt',   name:'ΒΤ',                    dims:['width','height'] },
+    { id:'ks_syrm', name:'Κάθετο Συρματόσχοινα',  dims:['width','height'] },
+    { id:'ks_ntiz', name:'Κάθετο Ντίζες Φ10',     dims:['width','height'] },
+  ]},
+  { id:'tzamia', name:'Τζάμια', icon:'🔷', subs:[
+    { id:'tz_anemo', name:'Ανεμοφράκτης',    dims:['width','height'] },
+    { id:'tz_syro',  name:'Συρόμενα Τζάμια', dims:['width','height'] },
+    { id:'tz_gil',   name:'Γκιλοτίνα',       dims:['width','height'] },
+  ]},
+];
+
+const DIM_LABELS  = { width:'Πλάτος (cm)', projection:'Προβολή (cm)', height:'Ύψος (cm)', depth:'Βάθος (cm)' };
+const DIM_PHOLDER = { width:'π.χ. 300', projection:'π.χ. 250', height:'π.χ. 220', depth:'π.χ. 350' };
+const VAT = 0.24;
+let offerCounter = 1;
+let cart = [], currentProduct = null, currentCategory = null;
+let currentQty = 1, priceCalculated = false, currentOfferNum = null;
+let sel = { mechanism:null, axonas:null, fabric:null, manivela:null, thiki:null, glossa:null, typosGlossis:null };
+let opt = { entatiras:false, motor:false, xoufta:false, xouftaImanta:false };
+let setaCount = 2;
+let lastCalcResult = null;
+
+function goTo(name) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goToProducts() {
+  const first=document.getElementById('c-first').value.trim();
+  const last =document.getElementById('c-last').value.trim();
+  if(!first||!last){alert('Συμπλήρωσε Όνομα και Επώνυμο.');return;}
+  document.getElementById('chip-avatar').textContent=(first[0]+last[0]).toUpperCase();
+  document.getElementById('chip-name').textContent=first+' '+last;
+  const co=document.getElementById('c-company').value.trim();
+  const em=document.getElementById('c-email').value.trim();
+  const mo=document.getElementById('c-mobile').value.trim();
+  document.getElementById('chip-sub').textContent=co||em||mo||'—';
+  saveState(); renderCart(); goTo('home');
+}
+
+function buildProductList() {
+  const container=document.getElementById('productList');
+  container.innerHTML='';
+  PRODUCTS.forEach(cat=>{
+    const card=document.createElement('div'); card.className='cat-card';
+    const header=document.createElement('div'); header.className='cat-header';
+    header.innerHTML=`<div class="cat-left"><span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span></div><span class="expand-icon" id="exp-${cat.id}">▸</span>`;
+    const body=document.createElement('div'); body.className='cat-body'; body.style.display='none';
+    cat.subs.forEach(sub=>{
+      if(sub.subs){
+        const sh=document.createElement('div'); sh.className='subcat-header';
+        sh.innerHTML=`<span class="subcat-name">${sub.name}</span><span class="expand-icon" id="exp-${sub.id}">▸</span>`;
+        const sb=document.createElement('div'); sb.style.display='none';
+        sub.subs.forEach(leaf=>sb.appendChild(makeLeaf(leaf,cat)));
+        sh.onclick=()=>{const o=sb.style.display!=='none';sb.style.display=o?'none':'block';document.getElementById('exp-'+sub.id).textContent=o?'▸':'▾';};
+        body.appendChild(sh);body.appendChild(sb);
+      } else {body.appendChild(makeLeaf(sub,cat));}
+    });
+    header.onclick=()=>{const o=body.style.display!=='none';body.style.display=o?'none':'block';document.getElementById('exp-'+cat.id).textContent=o?'▸':'▾';};
+    card.appendChild(header);card.appendChild(body);container.appendChild(card);
+  });
+}
+
+function makeLeaf(product,category){
+  const el=document.createElement('div'); el.className='leaf-item';
+  el.innerHTML=`<span class="leaf-name">${product.name}</span><span class="leaf-arrow">›</span>`;
+  el.onclick=()=>selectProduct(product,category);
+  return el;
+}
+
+function selectProduct(product,category){
+  currentProduct=product; currentCategory=category;
+  currentQty=1; priceCalculated=false; lastCalcResult=null;
+  sel={mechanism:null,axonas:null,fabric:null,manivela:null,thiki:null,glossa:null,typosGlossis:null};
+  opt={entatiras:false,motor:false,xoufta:false,xouftaImanta:false};
+  setaCount=2;
+  document.getElementById('pf-category').textContent=category.name;
+  document.getElementById('pf-name').textContent=product.name;
+  document.getElementById('pf-notes').value='';
+  document.getElementById('price-result').style.display='none';
+  document.getElementById('add-another-btn').style.display='none';
+  const isAntirides = product.id==='tenta_antirides';
+  const isYfasma    = product.id==='tenta_yfasma';
+  document.getElementById('antirides-section').style.display = isAntirides?'block':'none';
+  document.getElementById('yfasma-section').style.display    = isYfasma?'block':'none';
+  const fieldsEl=document.getElementById('pf-fields');
+  fieldsEl.innerHTML='';
+  product.dims.forEach(dim=>{
+    const row=document.createElement('div'); row.className='field-row';
+    row.innerHTML=`<label class="field-label">${DIM_LABELS[dim]}</label><input class="field-input" id="dim-${dim}" type="number" placeholder="${DIM_PHOLDER[dim]||'0'}" min="1" step="1" oninput="onDimChange()">`;
+    fieldsEl.appendChild(row);
+  });
+  if(isAntirides){
+    buildDropdown('dd-mechanism','mechanism',DB.mechanisms,(i)=>`${i.name}`,i=>`${i.price}€/τεμ.`);
+    buildDropdown('dd-axonas','axonas',DB.axones,(i)=>i.name,i=>`${i.pricePerM}€/μ.`);
+    buildDropdown('dd-fabric-antirides','fabric',DB.fabrics,(i)=>i.name,i=>`${i.pricePerSqm}€/τ.μ.`);
+    buildDropdown('dd-manivela','manivela',DB.maniveles,(i)=>i.name,i=>`${i.price}€`);
+    buildSimpleList('sl-thiki','thiki',DB.thiki);
+    buildSimpleList('sl-glossa','glossa',DB.glossa);
+    buildSimpleList('sl-typosGlossis','typosGlossis',DB.typosGlossis);
+    ['sw-entatiras','sw-motor','sw-xoufta','sw-xoufta-imanta'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.classList.remove('on');
+    });
+    // Reset χούφτες qty inputs
+    ['qty-xoufta','qty-xoufta-imanta'].forEach(id=>{
+      const el=document.getElementById(id); if(el){el.value=1;el.style.display='none';}
+    });
+    // Επαναφορά κρυμμένων sections από προηγούμενη επιλογή
+    document.getElementById('dd-mechanism').style.display='block';
+    document.getElementById('label-mechanism').style.display='block';
+    document.getElementById('toggle-entatiras').style.display='flex';
+    document.getElementById('manivela-section').style.display='block';
+    document.getElementById('xeiristirio-section').style.display='none';
+    if(document.getElementById('pf-xeiristirio')) document.getElementById('pf-xeiristirio').value='';
+    document.getElementById('seta-question').style.display='none';
+  }
+  if(isYfasma){
+    buildDropdown('dd-fabric-yfasma','fabric',DB.fabrics,(i)=>i.name,i=>`${i.pricePerSqm}€/τ.μ.`);
+  }
+  goTo('product');
+}
+
+function buildDropdown(containerId, selKey, items, nameFn, priceFn){
+  const container=document.getElementById(containerId);
+  const uid=containerId;
+  container.innerHTML=`
+    <div class="dropdown-wrap" id="dw-${uid}">
+      <div class="dropdown-selected" onclick="toggleDD('${uid}')">
+        <div>
+          <div class="dropdown-placeholder" id="dp-${uid}">Επίλεξε...</div>
+          <div id="dsel-${uid}" style="display:none">
+            <div class="dropdown-sel-main" id="dsm-${uid}"></div>
+            <div class="dropdown-sel-sub"  id="dss-${uid}"></div>
+          </div>
+        </div>
+        <span class="dropdown-chevron" id="dc-${uid}">›</span>
+      </div>
+      <div class="dropdown-list" id="dl-${uid}">
+        ${items.map(item=>`
+          <div class="dropdown-option" id="dopt-${uid}-${item.id}" onclick="selectDD('${uid}','${selKey}','${item.id}')">
+            <div>
+              <div class="dopt-name">${nameFn(item)}</div>
+              <div class="dopt-price">${priceFn(item)}</div>
+            </div>
+            <span class="dopt-check">✓</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function toggleDD(uid){
+  const list=document.getElementById('dl-'+uid);
+  const chev=document.getElementById('dc-'+uid);
+  const open=list.classList.contains('open');
+  document.querySelectorAll('.dropdown-list').forEach(l=>l.classList.remove('open'));
+  document.querySelectorAll('.dropdown-chevron').forEach(c=>c.classList.remove('open'));
+  if(!open){list.classList.add('open');chev.classList.add('open');}
+}
+
+function selectDD(uid, selKey, itemId){
+  const allItems={mechanism:DB.mechanisms,axonas:DB.axones,fabric:DB.fabrics,manivela:DB.maniveles};
+  const item=allItems[selKey].find(i=>i.id===itemId);
+  if(!item) return;
+  sel[selKey]=item;
+  document.getElementById('dp-'+uid).style.display='none';
+  document.getElementById('dsel-'+uid).style.display='block';
+  document.getElementById('dsm-'+uid).textContent=item.name;
+  const priceFns={mechanism:i=>`${i.price}€/τεμ.`,axonas:i=>`${i.pricePerM}€/μ.`,fabric:i=>`${i.pricePerSqm}€/τ.μ.`,manivela:i=>`${i.price}€`};
+  document.getElementById('dss-'+uid).textContent=priceFns[selKey](item);
+  document.querySelectorAll(`[id^="dopt-${uid}-"]`).forEach(el=>el.classList.remove('active'));
+  document.getElementById(`dopt-${uid}-${itemId}`)?.classList.add('active');
+  document.getElementById('dl-'+uid).classList.remove('open');
+  document.getElementById('dc-'+uid).classList.remove('open');
+  if(selKey==='mechanism') onDimChange();
+  priceCalculated=false;
+  document.getElementById('price-result').style.display='none';
+}
+
+function onDimChange(){
+  if(currentProduct?.id!=='tenta_antirides') return;
+  const w=parseFloat(document.getElementById('dim-width')?.value)||0;
+  const setaQ=document.getElementById('seta-question');
+  if(w>500){setaQ.style.display='block';buildSetaOptions(w);}
+  else{setaQ.style.display='none';setaCount=2;}
+  priceCalculated=false;
+  document.getElementById('price-result').style.display='none';
+}
+
+function buildSetaOptions(width){
+  const opts=document.getElementById('seta-options');
+  const maxSeta=Math.ceil(width/200)+1;
+  opts.innerHTML='';
+  for(let i=2;i<=Math.max(maxSeta,4);i++){
+    const btn=document.createElement('div');
+    btn.className='seta-opt'+(setaCount===i?' active':'');
+    btn.textContent=i+' Σετ';
+    btn.onclick=()=>{
+      setaCount=i;
+      document.querySelectorAll('.seta-opt').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      priceCalculated=false;
+      document.getElementById('price-result').style.display='none';
+    };
+    opts.appendChild(btn);
+  }
+}
+
+function toggleEntatiras(){
+  if(opt.motor) return;
+  opt.entatiras=!opt.entatiras;
+  document.getElementById('sw-entatiras').classList.toggle('on',opt.entatiras);
+  const hide=opt.entatiras;
+  document.getElementById('label-mechanism').style.display=hide?'none':'block';
+  document.getElementById('dd-mechanism').style.display   =hide?'none':'block';
+  // Μανιβέλα παραμένει ορατή με εντατήρα
+  priceCalculated=false;
+  document.getElementById('price-result').style.display='none';
+}
+
+function toggleMotor(){
+  opt.motor=!opt.motor;
+  document.getElementById('sw-motor').classList.toggle('on',opt.motor);
+  if(opt.motor){
+    // Μοτέρ ON → μηδενίζει μηχανισμό, εντατήρα, μανιβέλα
+    opt.entatiras=false;
+    document.getElementById('sw-entatiras').classList.remove('on');
+    sel.manivela=null;
+    // Κρύβει μηχανισμό + εντατήρα + μανιβέλα, εμφανίζει χειριστήριο
+    document.getElementById('dd-mechanism').style.display  ='none';
+    document.getElementById('label-mechanism').style.display='none';
+    document.getElementById('toggle-entatiras').style.display='none';
+    document.getElementById('manivela-section').style.display='none';
+    document.getElementById('xeiristirio-section').style.display='block';
+  } else {
+    document.getElementById('dd-mechanism').style.display  ='block';
+    document.getElementById('label-mechanism').style.display='block';
+    document.getElementById('toggle-entatiras').style.display='flex';
+    document.getElementById('manivela-section').style.display='block';
+    document.getElementById('xeiristirio-section').style.display='none';
+    if(document.getElementById('pf-xeiristirio')) document.getElementById('pf-xeiristirio').value='';
+  }
+  priceCalculated=false;
+  document.getElementById('price-result').style.display='none';
+}
+
+function toggleSwitch(id){
+  const sw=document.getElementById(id);
+  const key=id==='sw-motor'?'motor':id==='sw-xoufta'?'xoufta':'xouftaImanta';
+  opt[key]=!opt[key];
+  sw.classList.toggle('on',opt[key]);
+  // Εμφάνιση input ποσότητας για χούφτες
+  if(id==='sw-xoufta'){
+    const inp=document.getElementById('qty-xoufta');
+    if(inp){ inp.style.display=opt[key]?'block':'none'; if(!opt[key]) inp.value=1; }
+  }
+  if(id==='sw-xoufta-imanta'){
+    const inp=document.getElementById('qty-xoufta-imanta');
+    if(inp){ inp.style.display=opt[key]?'block':'none'; if(!opt[key]) inp.value=1; }
+  }
+  priceCalculated=false;
+  document.getElementById('price-result').style.display='none';
+}
+
+function calcPrice(){
+  const widthCm=parseFloat(document.getElementById('dim-width')?.value)||0;
+  const projCm =parseFloat(document.getElementById('dim-projection')?.value||document.getElementById('dim-height')?.value)||0;
+  if(!widthCm||!projCm){alert('Συμπλήρωσε τις διαστάσεις.');return;}
+
+  if(currentProduct.id==='tenta_yfasma'){
+    if(!sel.fabric){alert('Επίλεξε πανί.');return;}
+    const f=sel.fabric;
+    const sqm=(widthCm/100)*((projCm+70)/100);
+    const raw=sqm*f.pricePerSqm;
+    const final=Math.max(raw,DB.minCharge);
+    const minApplied=raw<DB.minCharge;
+    const sheets=Math.floor((widthCm+5)/(f.width-2));
+    const tsonta=(widthCm+5)-(sheets*(f.width-2));
+    document.getElementById('pricing-breakdown').innerHTML=
+      cRow('Πλάτος',widthCm+' cm')+cRow('Προβολή + 70cm',(projCm+70)+' cm')+
+      cRow('Τ.μ. υφάσματος',sqm.toFixed(3)+' τ.μ.')+cRow('Πανί: '+f.name,f.pricePerSqm+' €/τ.μ.')+
+      cRow('Αξία υφάσματος',raw.toFixed(2)+' €')+
+      (minApplied?cRow('⚠️ Ελάχιστη χρέωση',DB.minCharge+' €','highlight'):'');
+    document.getElementById('production-section').style.display='block';
+    document.getElementById('production-iron').innerHTML=cRow('—','Δεν εφαρμόζεται');
+    document.getElementById('production-fabric').innerHTML=
+      cRow('Πλάτος υφάσματος',widthCm+' cm')+cRow('Ύψος υφάσματος',(projCm+70)+' cm')+
+      cRow('Φύλλα',sheets+' φύλλα × '+(projCm+70)+' cm')+
+      (tsonta>0.5?cRow('Τσόντα',tsonta.toFixed(1)+' cm × '+(projCm+70)+' cm'):'');
+    document.getElementById('production-alerts').innerHTML=
+      `<div class="calc-alert production">🧵 Χρειάζεστε <strong>${sheets} φύλλ${sheets===1?'ο':'α'}</strong> ${f.name} × ${projCm+70} cm`+
+      (tsonta>0.5?` + τσόντα <strong>${tsonta.toFixed(1)} cm</strong> × ${projCm+70} cm`:'')+'</div>';
+    lastCalcResult={final,production:{sheets,tsonta,projCm,f,widthCm}};
+    showResult(final,minApplied);
+    return;
+  }
+
+  if(currentProduct.id==='tenta_antirides'){
+    if(!sel.axonas)   {alert('Επίλεξε άξονα.');return;}
+    if(!sel.fabric)   {alert('Επίλεξε ύφασμα.');return;}
+    if(!opt.motor&&!opt.entatiras&&!sel.mechanism){alert('Επίλεξε μηχανισμό.');return;}
+    if(!opt.motor&&!sel.manivela){alert('Επίλεξε μανιβέλα ή ενεργοποίησε μοτέρ.');return;}
+    const mech=opt.entatiras?DB.entatiras:sel.mechanism;
+    const axon=sel.axonas, f=sel.fabric;
+    const mechWidth = opt.motor ? (DB.motor?.width||0) : (mech?.width||0);
+    const axonasCm=widthCm-mechWidth, axonasM=axonasCm/100;
+    if(axonasCm<=0){
+      alert(`❌ Πλάτος πολύ μικρό!\nΟ μηχανισμός ${mech?.name||''} έχει πλάτος ${mechWidth}cm.\nΤο συνολικό πλάτος πρέπει να είναι τουλάχιστον ${mechWidth+10}cm.\n\n💡 Θυμήσου: εισάγεις διαστάσεις σε ΕΚΑΤΟΣΤΑ.`);
+      return;
+    }
+    if(widthCm<50||projCm<30){
+      alert('❌ Διαστάσεις πολύ μικρές.\nΕισάγεις διαστάσεις σε εκατοστά (cm).\nΠ.χ. 300 για 3 μέτρα πλάτος.');
+      return;
+    }
+    const numSeta=widthCm<=500?2:setaCount;
+    const solinaCm=projCm, solinaM=solinaCm/100;
+    const fabricWidthCm=axonasCm-2, fabricHeightCm=projCm+70;
+    const sqm=(fabricWidthCm/100)*(fabricHeightCm/100);
+    const sheets=Math.floor((fabricWidthCm+5)/(f.width-2));
+    const tsonta=(fabricWidthCm+5)-(sheets*(f.width-2));
+    const qtyXoufta  = opt.xoufta       ? (parseInt(document.getElementById('qty-xoufta')?.value)||1)        : 0;
+    const qtyImanta  = opt.xouftaImanta ? (parseInt(document.getElementById('qty-xoufta-imanta')?.value)||1) : 0;
+    const xAloum = DB.xouftes.find(x=>x.id==='XouftaAlouminiou');
+    const xImanta= DB.xouftes.find(x=>x.id==='XouftaImanta');
+    // Στριφώνια/Ούπα = άθροισμα από κάθε εξάρτημα (από DB)
+    const totalStrifonia =
+      (opt.motor ? (DB.motor?.strifonia||0) : (mech?.strifonia||0)) +
+      (!opt.motor && !opt.entatiras ? (DB.kouzineto?.strifonia||0) : 0) +
+      qtyXoufta  * (xAloum?.strifonia||0) +
+      qtyImanta  * (xImanta?.strifonia||0) +
+      numSeta    * (DB.setAntiridas?.strifonia||0);
+    let lines=[], total=0;
+    const add=(label,price,qty=1,unit='')=>{
+      if(qty===0) return;
+      const t=price*qty; total+=t;
+      lines.push(cRow(label+(qty!==1?` × ${typeof qty==='number'?qty.toFixed(qty%1?2:0):qty}${unit}`:''),t.toFixed(2)+' €'));
+    };
+    if(opt.motor&&DB.motor)  add(DB.motor.name,DB.motor.price);
+    else if(opt.entatiras)   add('Εντατήρας',DB.entatiras.price);
+    else if(mech)           {add('Μηχανισμός: '+mech.name,mech.price);add('Κουζινέτο',DB.kouzineto.price,DB.kouzineto.qty);}
+    add('Άξονας '+axon.name,axon.pricePerM,axonasM,' μ.');
+    add('Αντίβαρο ('+DB.antivaro.name+')',DB.antivaro.pricePerM,axonasM,' μ.');
+    add('Σετ Αντιρίδας',DB.setAntiridas.price,numSeta);
+    add('Κολονάκι',DB.kolonaki.price,numSeta);
+    add('Σωλήνα Αλουμινίου',DB.solinaAloum.pricePerM,solinaM*numSeta,' μ.');
+    add('Στριφώνια',DB.strifonia.price,totalStrifonia);
+    add('Ούπα',DB.oupa.price,totalStrifonia);
+    add('Τάπες',DB.tapes.price,2);
+    if(!opt.motor&&sel.manivela) add('Μανιβέλα: '+sel.manivela.name,sel.manivela.price);
+    if(opt.xoufta){const x=DB.xouftes.find(x=>x.id==='XouftaAlouminiou');if(x)add(x.name,x.price,qtyXoufta);}
+    if(opt.xouftaImanta){const x=DB.xouftes.find(x=>x.id==='XouftaImanta');if(x)add(x.name,x.price,qtyImanta);}
+    add('Ύφασμα '+f.name,f.pricePerSqm,sqm,' τ.μ.');
+    const final=Math.max(total,DB.minCharge);
+    document.getElementById('pricing-breakdown').innerHTML=lines.join('')+cRow('──────────────','')+cRow('Σύνολο υλικών',total.toFixed(2)+' €','highlight');
+    document.getElementById('production-section').style.display='block';
+    // Σιδηροκατασκευή — όλες οι επιλογές χωρίς τιμές
+    const pRow=(label,value)=>`<div class="calc-row"><span class="calc-label">${label}</span><span class="calc-value">${value}</span></div>`;
+    let iron='';
+    if(opt.motor)          iron+=pRow('Μοτέρ','Μοτέρ με Αντίληψη');
+    else if(opt.entatiras) iron+=pRow('Μηχανισμός','Εντατήρας');
+    else if(mech)         {iron+=pRow('Μηχανισμός',mech.name); iron+=pRow('Κουζινέτο','1 τεμ.');}
+    iron+=pRow('Άξονας',axon.name+' — '+axonasCm.toFixed(1)+' cm');
+    iron+=pRow('Αντίβαρο',DB.antivaro.name+' — '+axonasCm.toFixed(1)+' cm');
+    iron+=pRow('Σετ Αντιρίδας',numSeta+' σετ');
+    iron+=pRow('Κολονάκι',numSeta+' τεμ.');
+    iron+=pRow('Σωλήνα Αλουμινίου',numSeta+' × '+solinaCm+' cm');
+    if(totalStrifonia>0) iron+=pRow('Στριφώνια',totalStrifonia+' τεμ.');
+    if(totalStrifonia>0) iron+=pRow('Ούπα',totalStrifonia+' τεμ.');
+    iron+=pRow('Τάπες','2 τεμ.');
+    if(!opt.motor&&sel.manivela) iron+=pRow('Μανιβέλα',sel.manivela.name);
+    if(opt.xoufta&&xAloum)  iron+=pRow('Χούφτα Αλουμινίου',qtyXoufta+' τεμ.');
+    if(opt.xouftaImanta&&xImanta) iron+=pRow('Χούφτα Ιμάντας',qtyImanta+' τεμ.');
+    document.getElementById('production-iron').innerHTML=iron;
+    document.getElementById('production-fabric').innerHTML=
+      cRow('Πλάτος υφάσματος',fabricWidthCm.toFixed(1)+' cm')+cRow('Ύψος υφάσματος',fabricHeightCm+' cm')+
+      cRow('Φύλλα',sheets+' × '+fabricHeightCm+' cm')+
+      (tsonta>0.5?cRow('Τσόντα',tsonta.toFixed(1)+' × '+fabricHeightCm+' cm'):'')+
+      (sel.thiki       ?cRow('Θήκη',sel.thiki.name):'')+
+      (sel.glossa      ?cRow('Γλώσσα',sel.glossa.name):'')+
+      (sel.typosGlossis?cRow('Τύπος Γλώσσας',sel.typosGlossis.name):'');
+    document.getElementById('production-alerts').innerHTML=
+      `<div class="calc-alert">🔩 Άξονας & Αντίβαρο: <strong>${axonasCm.toFixed(1)} cm</strong> | ${numSeta} Σετ Αντιρίδας | ${numSeta} Σωλήνες <strong>${solinaCm} cm</strong></div>`+
+      `<div class="calc-alert production">🧵 <strong>${sheets} φύλλ${sheets===1?'ο':'α'}</strong> ${f.name} × ${fabricHeightCm} cm`+
+      (tsonta>0.5?` + τσόντα <strong>${tsonta.toFixed(1)} cm</strong>`:'')+'</div>';
+    lastCalcResult={final,total};
+    showResult(final,false);
+    return;
+  }
+
+  showResult(0,false);
+  document.getElementById('pricing-breakdown').innerHTML=cRow('⚠️ Τιμολόγηση υπό κατασκευή','0.00 €');
+}
+
+function buildSimpleList(containerId, selKey, items){
+  const el=document.getElementById(containerId);
+  if(!el||!items||!items.length){if(el)el.innerHTML='<span style="color:var(--muted);font-size:12px">—</span>';return;}
+  el.innerHTML=items.map(item=>`<button class="simple-pill${sel[selKey]?.id===item.id?' active':''}" onclick="pickSimple('${containerId}','${selKey}','${item.id}')">${item.name}</button>`).join('');
+}
+
+function pickSimple(containerId, selKey, itemId){
+  const allLists={thiki:DB.thiki, glossa:DB.glossa, typosGlossis:DB.typosGlossis};
+  const items=allLists[selKey]||[];
+  sel[selKey]=items.find(i=>i.id===itemId)||null;
+  document.querySelectorAll(`#${containerId} .simple-pill`).forEach(b=>b.classList.remove('active'));
+  document.querySelector(`#${containerId} .simple-pill[onclick*="'${itemId}'"]`)?.classList.add('active');
+  priceCalculated=false;
+  document.getElementById('price-result').style.display='none';
+}
+
+function cRow(label,value,cls=''){
+  return `<div class="calc-row"><span class="calc-label">${label}</span><span class="calc-value${cls?' '+cls:''}">${value}</span></div>`;
+}
+
+function showResult(price,minApplied){
+  priceCalculated=true;
+  window._currentPrice=price;
+  document.getElementById('price-result').style.display='block';
+  document.getElementById('price-display').textContent=price.toFixed(2)+' €';
+  document.getElementById('price-warning').style.display=minApplied?'block':'none';
+  document.getElementById('add-another-btn').style.display='block';
+}
+
+function _buildCartItem(){
+  if(!priceCalculated){alert('Πάτα "Υπολόγισε Τιμή" πρώτα.');return null;}
+  const widthCm=parseFloat(document.getElementById('dim-width')?.value)||0;
+  const projCm =parseFloat(document.getElementById('dim-projection')?.value||document.getElementById('dim-height')?.value)||0;
+  const sub=sel.fabric?sel.fabric.name:(sel.mechanism?sel.mechanism.name:'');
+  return {
+    id:Date.now(), productId:currentProduct.id,
+    fullName:currentCategory.name+' › '+currentProduct.name,
+    dims:{width:widthCm,projection:projCm}, secondKey:'projection', quantity:currentQty,
+    fabric:sel.fabric?.name||'', color:'',
+    notes:document.getElementById('pf-notes').value.trim(),
+    price:window._currentPrice, sub, production:lastCalcResult?.production||null,
+  };
+}
+
+function addToOffer(){
+  const item=_buildCartItem(); if(!item)return;
+  cart.push(item); currentOfferNum=null; saveState(); renderCart(); goTo('home');
+  setTimeout(()=>{document.getElementById('view-cart-bar').style.transform='scale(1.02)';},50);
+  setTimeout(()=>{document.getElementById('view-cart-bar').style.transform='scale(1)';},250);
+}
+
+function addAndPickAnother(){
+  const item=_buildCartItem(); if(!item)return;
+  cart.push(item); currentOfferNum=null; saveState(); renderCart(); goTo('home');
+  document.getElementById('screen-home').querySelector('.scroll-area').scrollTo(0,0);
+}
+
+function removeFromCart(id){cart=cart.filter(i=>i.id!==id);saveState();renderCart();}
+
+function renderCart(){
+  const cs=document.getElementById('cart-section');
+  const cb=document.getElementById('view-cart-bar');
+  const li=document.getElementById('cart-items-list');
+  if(cart.length===0){cs.style.display='none';cb.style.display='none';return;}
+  cs.style.display='block'; cb.style.display='flex';
+  const net=cart.reduce((s,i)=>s+i.price,0);
+  document.getElementById('cart-total-display').textContent=(net*(1+VAT)).toFixed(2)+' €';
+  li.innerHTML='';
+  cart.forEach(item=>{
+    const row=document.createElement('div'); row.className='cart-item-row';
+    const dims=`${item.dims.width}cm × ${item.dims.projection||item.dims.height||0}cm`;
+    row.innerHTML=`<div class="cart-item-info"><div class="cart-item-name">${item.fullName}</div><div class="cart-item-dims">${dims}${item.sub?' · '+item.sub:''}</div></div><span class="cart-item-price">${item.price.toFixed(2)} €</span><button class="cart-item-del" onclick="removeFromCart(${item.id})">×</button>`;
+    li.appendChild(row);
+  });
+}
+
+function goToPreview(){
+  if(cart.length===0){alert('Πρόσθεσε τουλάχιστον ένα προϊόν.');return;}
+  if(!currentOfferNum) currentOfferNum='OFR-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+String(offerCounter++).padStart(3,'0');
+  document.getElementById('prev-offernum').textContent='Αρ. Προσφοράς: '+currentOfferNum;
+  document.getElementById('prev-date').textContent='Ημερομηνία: '+new Date().toLocaleDateString('el-GR');
+  const g=id=>document.getElementById(id).value.trim();
+  const first=g('c-first'),last=g('c-last'),company=g('c-company'),email=g('c-email'),
+        mobile=g('c-mobile'),phone=g('c-phone'),address=g('c-address'),city=g('c-city'),afm=g('c-afm');
+  let cHtml=dRow('Ονοματεπώνυμο',first+' '+last,true);
+  if(company) cHtml+=dRow('Εταιρεία',company);
+  if(email)   cHtml+=dRow('Email',email);
+  if(mobile)  cHtml+=dRow('Κινητό',mobile);
+  if(phone)   cHtml+=dRow('Τηλέφωνο',phone);
+  if(address||city) cHtml+=dRow('Διεύθυνση',[address,city].filter(Boolean).join(', '));
+  if(afm)     cHtml+=dRow('ΑΦΜ',afm);
+  document.getElementById('prev-customer').innerHTML=cHtml;
+  const itemsEl=document.getElementById('prev-items'); itemsEl.innerHTML='';
+  cart.forEach((item,i)=>{
+    const div=document.createElement('div'); div.className='item-card';
+    let rows=dRow('Διαστάσεις',item.dims.width+'cm × '+(item.dims.projection||item.dims.height||0)+'cm');
+    if(item.fabric) rows+=dRow('Πανί',item.fabric);
+    if(item.notes)  rows+=dRow('Σημειώσεις',item.notes);
+    div.innerHTML=`<div class="item-card-header"><span class="item-card-name">${i+1}. ${item.fullName}</span><span class="item-card-price">${item.price.toFixed(2)} €</span></div><div>${rows}</div>`;
+    itemsEl.appendChild(div);
+  });
+  const net=cart.reduce((s,i)=>s+i.price,0);
+  const vat=net*VAT, total=net+vat;
+  document.getElementById('prev-net').textContent=net.toFixed(2)+' €';
+  document.getElementById('prev-vat').textContent=vat.toFixed(2)+' €';
+  document.getElementById('prev-total').textContent=total.toFixed(2)+' €';
+  const cnotes=g('c-notes');
+  document.getElementById('prev-notes-section').style.display=cnotes?'block':'none';
+  if(cnotes) document.getElementById('prev-notes').textContent=cnotes;
+  const btn=document.getElementById('send-btn');
+  btn.style.display='block'; btn.disabled=false; btn.textContent='📧 Αποστολή στον Πελάτη';
+  document.getElementById('sent-banner').style.display='none';
+  goTo('preview');
+}
+
+function dRow(label,value,bold=false){
+  return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value${bold?' bold':''}">${value}</span></div>`;
+}
+
+function sendEmail(){
+  const email=document.getElementById('c-email').value.trim();
+  if(!email){alert('Δεν υπάρχει email πελάτη.');return;}
+  const btn=document.getElementById('send-btn');
+  btn.textContent='Αποστολή...'; btn.disabled=true;
+  setTimeout(()=>{
+    document.getElementById('sent-banner').style.display='block';
+    btn.style.display='none';
+    alert(`✅ DEMO: Η προσφορά θα στελνόταν στο ${email}`);
+  },1200);
+}
+
+function newOffer(){
+  cart=[]; currentProduct=null; priceCalculated=false; currentOfferNum=null; lastCalcResult=null;
+  sel={mechanism:null,axonas:null,fabric:null,manivela:null,thiki:null,glossa:null,typosGlossis:null};
+  opt={entatiras:false,motor:false,xoufta:false,xouftaImanta:false};
+  ['c-first','c-last','c-company','c-email','c-mobile','c-phone','c-address','c-city','c-afm','c-notes']
+    .forEach(id=>document.getElementById(id).value='');
+  clearState();
+  renderCart(); goTo('customer');
+}
+
+// ===== localStorage persistence =====
+const LS_KEY = 'offerApp_v1';
+
+function saveState(){
+  const fields={};
+  ['c-first','c-last','c-company','c-email','c-mobile','c-phone','c-address','c-city','c-afm','c-notes']
+    .forEach(id=>{ const el=document.getElementById(id); if(el) fields[id]=el.value; });
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ cart, fields, currentOfferNum, offerCounter }));
+  } catch(e){}
+}
+
+function clearState(){
+  try { localStorage.removeItem(LS_KEY); } catch(e){}
+}
+
+function restoreState(){
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return false;
+    const s = JSON.parse(raw);
+    if(s.cart && s.cart.length){
+      cart = s.cart;
+      offerCounter = s.offerCounter || offerCounter;
+      currentOfferNum = s.currentOfferNum || null;
+    }
+    if(s.fields){
+      Object.entries(s.fields).forEach(([id,val])=>{
+        const el=document.getElementById(id); if(el) el.value=val;
+      });
+    }
+    return !!(s.fields && (s.fields['c-first'] || s.fields['c-last']));
+  } catch(e){ return false; }
+}
+
+loadDB();
+</script>
+</body>
+</html>

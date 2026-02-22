@@ -1,0 +1,295 @@
+<div class="awning-form-container">
+  <div class="header">
+    <h1>🎪 Τέντα με Αντιρίδες - Form Παραγγελίας</h1>
+    <p>Συμπληρώστε τα στοιχεία για κάθε τέντα</p>
+  </div>
+
+  <div class="form-section">
+    <form [formGroup]="form">
+      <!-- 1. ΒΑΣΙΚΑ ΣΤΟΙΧΕΙΑ -->
+      <div class="section-header">
+        <h3>1️⃣ Βασικά Στοιχεία</h3>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field class="form-field">
+          <mat-label>Πλάτος (cm)</mat-label>
+          <input matInput type="number" formControlName="width" placeholder="π.χ. 300">
+          <mat-error *ngIf="form.get('width')?.hasError('required')">Υποχρεωτικό</mat-error>
+          <mat-error *ngIf="form.get('width')?.hasError('min')">Ελάχιστο 10cm</mat-error>
+        </mat-form-field>
+
+        <mat-form-field class="form-field">
+          <mat-label>Ύψος (cm)</mat-label>
+          <input matInput type="number" formControlName="height" placeholder="π.χ. 250">
+          <mat-error *ngIf="form.get('height')?.hasError('required')">Υποχρεωτικό</mat-error>
+          <mat-error *ngIf="form.get('height')?.hasError('min')">Ελάχιστο 10cm</mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- 2. ΥΦΑΣΜΑ -->
+      <div class="section-header">
+        <h3>2️⃣ Επιλογή Ύφασματος</h3>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field class="form-field">
+          <mat-label>Ύφασμα</mat-label>
+          <mat-select formControlName="fabricId">
+            <mat-option value="">-- Επιλέξτε Ύφασμα --</mat-option>
+            <mat-option *ngFor="let fabric of fabrics" [value]="fabric.id">
+              {{ fabric.brand }} {{ fabric.type }} ({{ fabric.pricePerSqm }}€/τ.μ.)
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="form.get('fabricId')?.hasError('required')">Υποχρεωτικό</mat-error>
+        </mat-form-field>
+
+        <mat-form-field class="form-field">
+          <mat-label>Κωδικός Ύφασματος</mat-label>
+          <input matInput formControlName="fabricCode" placeholder="π.χ. 001-TEN-001">
+        </mat-form-field>
+      </div>
+
+      <!-- 3. ΑΞΟΝΑΣ -->
+      <div class="section-header">
+        <h3>3️⃣ Επιλογή Άξονα</h3>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field class="form-field full-width">
+          <mat-label>Άξονας (τιμή/μέτρο)</mat-label>
+          <mat-select formControlName="axleId">
+            <mat-option value="">-- Επιλέξτε Άξονα --</mat-option>
+            <mat-option *ngFor="let axle of axles" [value]="axle.id">
+              {{ axle.name }} ({{ axle.pricePerMeter }}€/μ)
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="form.get('axleId')?.hasError('required')">Υποχρεωτικό</mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- 4. ΜΗΧΑΝΙΣΜΟΣ / ΚΙΝΗΣΗ -->
+      <div class="section-header">
+        <h3>4️⃣ Σύστημα Μηχανισμού & Κίνησης</h3>
+      </div>
+
+      <div class="movement-selector">
+        <mat-radio-group formControlName="movementType">
+          <mat-radio-button value="manual">
+            🔧 Χειροκίνητο
+          </mat-radio-button>
+          <mat-radio-button value="motor">
+            ⚡ Ηλεκτροκίνηση
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <!-- MANUAL OPTIONS -->
+      <div *ngIf="isManualMode" class="mechanical-options">
+        <div class="form-row">
+          <mat-form-field class="form-field">
+            <mat-label>Τύπος Μηχανισμού</mat-label>
+            <mat-select formControlName="manualMechanismId">
+              <mat-option value="">-- Επιλέξτε Μηχανισμό --</mat-option>
+              <mat-option *ngFor="let mech of manualMechanisms" [value]="mech.id">
+                {{ mech.name }} ({{ mech.price }}€)
+              </mat-option>
+            </mat-select>
+            <mat-error>Υποχρεωτικό</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="tensioner">
+            Με Εντατήρα Φ48
+          </mat-checkbox>
+        </div>
+      </div>
+
+      <!-- MOTOR OPTIONS -->
+      <div *ngIf="!isManualMode" class="motor-options">
+        <div class="form-row">
+          <mat-form-field class="form-field">
+            <mat-label>Τύπος Μοτέρ</mat-label>
+            <mat-select formControlName="motorId">
+              <mat-option value="">-- Επιλέξτε Μοτέρ --</mat-option>
+              <mat-option *ngFor="let motor of motors" [value]="motor.id">
+                {{ motor.name }} ({{ motor.price }}€)
+              </mat-option>
+            </mat-select>
+            <mat-error>Υποχρεωτικό</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- 5. EXTRAS -->
+      <div class="section-header">
+        <h3>5️⃣ Έξτρα (Προαιρετικά)</h3>
+      </div>
+
+      <div class="extras-group">
+        <mat-checkbox formControlName="hufta" class="extra-checkbox">
+          <span class="extra-label">Χούφτα Αλουμινίου (20€)</span>
+        </mat-checkbox>
+
+        <mat-checkbox formControlName="stitheo" class="extra-checkbox">
+          <span class="extra-label">Στηθαίο με Κολόνες - Έξτρα +10€/τ.μ. στο ύφασμα</span>
+        </mat-checkbox>
+      </div>
+
+      <!-- CALCULATIONS PREVIEW -->
+      <div *ngIf="currentCalculations" class="calculations-preview">
+        <h4>📊 Ενδεικτικό Κόστος Τέντας</h4>
+        <div class="calculation-row">
+          <span>Διαστάσεις Ύφασματος (με περιθώριο):</span>
+          <strong>
+            ({{ form.get('width')?.value || 0 }} + 15) × ({{ form.get('height')?.value || 0 }} + 70) cm
+          </strong>
+        </div>
+        <div class="calculation-row">
+          <span>Εμβαδό Ύφασματος (τ.μ.):</span>
+          <strong>{{ currentCalculations.fabricArea.toFixed(2) }}</strong>
+        </div>
+        <div class="calculation-row">
+          <span>Κόστος Ύφασματος:</span>
+          <strong>€{{ currentCalculations.fabricCost.toFixed(2) }}</strong>
+        </div>
+        <div class="calculation-row">
+          <span>Κόστος Άξονα:</span>
+          <strong>€{{ currentCalculations.axleCost.toFixed(2) }}</strong>
+        </div>
+        <div class="calculation-row">
+          <span>Κόστος Μηχανισμού:</span>
+          <strong>€{{ currentCalculations.mechanismCost.toFixed(2) }}</strong>
+        </div>
+        <div class="calculation-row" *ngIf="currentCalculations.extrasCost > 0">
+          <span>Έξτρα:</span>
+          <strong>€{{ currentCalculations.extrasCost.toFixed(2) }}</strong>
+        </div>
+        <div class="calculation-row subtotal">
+          <span>Σύνολο (χωρίς ΦΠΑ):</span>
+          <strong>€{{ currentCalculations.subtotal.toFixed(2) }}</strong>
+        </div>
+        <div class="calculation-row vat">
+          <span>ΦΠΑ 24%:</span>
+          <strong>€{{ currentCalculations.vat.toFixed(2) }}</strong>
+        </div>
+        <div class="calculation-row total">
+          <span>ΣΥΝΟΛΟ:</span>
+          <strong>€{{ currentCalculations.total.toFixed(2) }}</strong>
+        </div>
+      </div>
+
+      <!-- ADD BUTTON -->
+      <div class="form-actions">
+        <button 
+          mat-raised-button 
+          color="accent"
+          (click)="addAwning()"
+          [disabled]="!form.valid"
+          class="add-button">
+          <mat-icon>add_circle</mat-icon>
+          Προσθήκη Τέντας
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ADDED AWNINGS LIST -->
+  <div *ngIf="awnings.length > 0" class="awnings-list-section">
+    <h3>📋 Προστιθέμενες Τέντες ({{ awnings.length }})</h3>
+    
+    <div *ngFor="let awning of awnings; let i = index" class="awning-card">
+      <div class="awning-header">
+        <h4>Τέντα {{ i + 1 }}</h4>
+        <button 
+          mat-icon-button 
+          color="warn"
+          (click)="removeAwning(i)"
+          matTooltip="Διαγραφή">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+
+      <div class="awning-details">
+        <div class="detail-row">
+          <span class="label">Διαστάσεις:</span>
+          <span>{{ awning.width }}cm × {{ awning.height }}cm</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Ύφασμα:</span>
+          <span>{{ getFabricLabel(awning.fabricId) }} ({{ awning.fabricCode }})</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Άξονας:</span>
+          <span>{{ getAxleLabel(awning.axleId) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Κίνηση:</span>
+          <span>
+            {{ awning.movementType === 'manual' ? 'Χειροκίνητο' : 'Ηλεκτροκίνηση' }}
+            <span *ngIf="awning.movementType === 'manual'">
+              - {{ getMechanismLabel(awning.manualMechanismId || '') }}
+              <span *ngIf="awning.tensioner">(με Εντατήρα)</span>
+            </span>
+            <span *ngIf="awning.movementType === 'motor'">
+              - {{ getMotorLabel(awning.motorId || '') }}
+            </span>
+          </span>
+        </div>
+        <div class="detail-row" *ngIf="awning.extras.hufta || awning.extras.stitheo">
+          <span class="label">Έξτρα:</span>
+          <span>
+            {{ awning.extras.hufta ? '✓ Χούφτα ' : '' }}
+            {{ awning.extras.stitheo ? '✓ Στηθαίο ' : '' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="awning-cost" *ngIf="awning.calculations">
+        <div class="cost-row total">
+          <span>Σύνολο:</span>
+          <strong>€{{ awning.calculations.total.toFixed(2) }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER TOTAL -->
+    <div class="order-summary">
+      <h3>📊 Σύνολα Παραγγελίας</h3>
+      <div class="summary-row subtotal">
+        <span>Σύνολο (χωρίς ΦΠΑ):</span>
+        <strong>€{{ orderSubtotal.toFixed(2) }}</strong>
+      </div>
+      <div class="summary-row vat">
+        <span>ΦΠΑ 24%:</span>
+        <strong>€{{ orderVat.toFixed(2) }}</strong>
+      </div>
+      <div class="summary-row total">
+        <span>ΣΥΝΟΛΟ ΠΑΡΑΓΓΕΛΙΑΣ:</span>
+        <strong>€{{ orderTotal.toFixed(2) }}</strong>
+      </div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="action-buttons">
+      <button 
+        mat-raised-button 
+        color="primary"
+        (click)="saveOrder()"
+        class="save-button">
+        <mat-icon>save</mat-icon>
+        Αποθήκευση Παραγγελίας
+      </button>
+
+      <button 
+        mat-raised-button 
+        color="accent"
+        (click)="sendEmail()"
+        class="email-button">
+        <mat-icon>mail</mat-icon>
+        Αποστολή Email (orders&#64;tsoukalasco.com)
+      </button>
+    </div>
+  </div>
+</div>

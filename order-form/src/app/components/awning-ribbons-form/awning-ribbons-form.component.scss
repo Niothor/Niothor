@@ -1,0 +1,364 @@
+.awning-form-container {
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+  color: white;
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 1.05rem;
+    opacity: 0.9;
+  }
+}
+
+.form-section {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #667eea;
+
+  h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+
+  &.full-width {
+    grid-template-columns: 1fr;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  width: 100%;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+// Movement selector (Radio buttons)
+.movement-selector {
+  display: flex;
+  gap: 30px;
+  margin: 20px 0 30px 0;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 6px;
+
+  mat-radio-button {
+    font-size: 1rem;
+    font-weight: 500;
+
+    ::ng-deep .mat-radio-label-content {
+      padding-left: 10px;
+    }
+  }
+}
+
+// Mechanical options
+.mechanical-options,
+.motor-options {
+  padding: 20px;
+  background: #f9f9f9;
+  border-left: 4px solid #667eea;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.checkbox-group {
+  margin-top: 15px;
+}
+
+// Extras
+.extras-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 20px 0 30px 0;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+.extra-checkbox {
+  .extra-label {
+    font-weight: 500;
+    color: #333;
+    margin-left: 10px;
+  }
+
+  ::ng-deep .mat-mdc-checkbox-label {
+    margin-top: 2px;
+  }
+}
+
+// Calculations preview
+.calculations-preview {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 25px;
+  border-radius: 8px;
+  margin: 30px 0;
+
+  h4 {
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+}
+
+.calculation-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+  strong {
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+
+  &.subtotal {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+  }
+
+  &.vat {
+    color: #ffd700;
+  }
+
+  &.total {
+    border: none;
+    padding-top: 15px;
+    padding-bottom: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+}
+
+// Form actions
+.form-actions {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.add-button {
+  min-width: 200px;
+  height: 50px;
+  font-size: 1.05rem;
+
+  mat-icon {
+    margin-right: 10px;
+  }
+}
+
+// Awnings list section
+.awnings-list-section {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  h3 {
+    color: #333;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 10px;
+  }
+}
+
+.awning-card {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+  }
+}
+
+.awning-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ddd;
+
+  h4 {
+    margin: 0;
+    color: #333;
+  }
+
+  button {
+    cursor: pointer;
+  }
+}
+
+.awning-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 15px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detail-row {
+  padding: 8px 0;
+  font-size: 0.95rem;
+
+  .label {
+    font-weight: 600;
+    color: #667eea;
+    margin-right: 10px;
+  }
+
+  span {
+    color: #333;
+  }
+}
+
+.awning-cost {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px;
+  border-radius: 6px;
+  margin-top: 15px;
+}
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 1.05rem;
+
+  &.total {
+    color: #ffd700;
+  }
+}
+
+// Order summary
+.order-summary {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  padding: 25px;
+  border-radius: 8px;
+  margin: 30px 0;
+
+  h3 {
+    color: white;
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: 500;
+
+  strong {
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  &.subtotal {
+    margin-bottom: 10px;
+  }
+
+  &.vat {
+    color: #ffd700;
+  }
+
+  &.total {
+    border: none;
+    padding-top: 15px;
+    padding-bottom: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffd700;
+  }
+}
+
+// Action buttons
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+
+  button {
+    min-width: 220px;
+    height: 50px;
+    font-size: 1rem;
+
+    mat-icon {
+      margin-right: 10px;
+    }
+  }
+
+  .save-button {
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+  }
+
+  .email-button {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .awning-form-container {
+    padding: 10px;
+  }
+
+  .form-section,
+  .awnings-list-section {
+    padding: 20px;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+}

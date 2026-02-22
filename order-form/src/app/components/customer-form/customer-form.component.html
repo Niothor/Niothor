@@ -1,0 +1,45 @@
+<form [formGroup]="form">
+  <div class="form-container">
+    <h3>Προσωπικά Στοιχεία</h3>
+    
+    <mat-form-field class="full-width">
+      <mat-label>Ονοματεπώνυμο</mat-label>
+      <input matInput formControlName="fullName" placeholder="Όνομα Επώνυμο">
+      <mat-error *ngIf="form.get('fullName')?.hasError('required')">
+        Υποχρεωτικό πεδίο
+      </mat-error>
+      <mat-error *ngIf="form.get('fullName')?.hasError('minlength')">
+        Ελάχιστο 3 χαρακτήρες
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label>Διεύθυνση</mat-label>
+      <input matInput formControlName="address" placeholder="Πλήρης διεύθυνση">
+      <mat-error *ngIf="form.get('address')?.hasError('required')">
+        Υποχρεωτικό πεδίο
+      </mat-error>
+      <mat-error *ngIf="form.get('address')?.hasError('minlength')">
+        Ελάχιστη διεύθυνση απαιτείται
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label>Τηλέφωνο</mat-label>
+      <input matInput formControlName="phone" placeholder="10ψήφιος αριθμός">
+      <mat-error *ngIf="form.get('phone')?.hasError('required')">
+        Υποχρεωτικό πεδίο
+      </mat-error>
+      <mat-error *ngIf="form.get('phone')?.hasError('pattern')">
+        Παρακαλώ εισάγετε έναν 10ψήφιο αριθμό
+      </mat-error>
+    </mat-form-field>
+
+    <div class="button-group">
+      <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!form.valid">
+        <mat-icon>arrow_forward</mat-icon>
+        Επόμενο
+      </button>
+    </div>
+  </div>
+</form>

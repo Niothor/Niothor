@@ -1,0 +1,50 @@
+<div class="dimensions-container" *ngIf="currentProduct">
+  <h3>Διαστάσεις για {{ currentProduct.name }}</h3>
+  <p class="subtitle">Συμπληρώστε τις διαστάσεις του προϊόντος</p>
+
+  <form [formGroup]="form" class="dimensions-form">
+    <div *ngFor="let dimension of currentProduct.dimensions" class="dimension-field">
+      
+      <!-- Text or Number Input -->
+      <mat-form-field *ngIf="dimension.type === 'text' || dimension.type === 'number'" class="full-width">
+        <mat-label>{{ dimension.label }}</mat-label>
+        <input 
+          matInput 
+          [type]="dimension.type"
+          [formControlName]="dimension.id"
+          [required]="dimension.required">
+        <mat-error *ngIf="form.get(dimension.id)?.hasError('required')">
+          Υποχρεωτικό πεδίο
+        </mat-error>
+        <mat-error *ngIf="form.get(dimension.id)?.hasError('pattern')">
+          Παρακαλώ εισάγετε έναν έγκυρο αριθμό
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Select Dropdown -->
+      <mat-form-field *ngIf="dimension.type === 'select'" class="full-width">
+        <mat-label>{{ dimension.label }}</mat-label>
+        <mat-select [formControlName]="dimension.id" [required]="dimension.required">
+          <mat-option value="">-- Επιλέξτε --</mat-option>
+          <mat-option *ngFor="let option of dimension.options" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.get(dimension.id)?.hasError('required')">
+          Υποχρεωτικό πεδίο
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="button-group">
+      <button mat-raised-button (click)="onBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Πίσω
+      </button>
+      <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!form.valid">
+        <mat-icon>arrow_forward</mat-icon>
+        Επόμενο
+      </button>
+    </div>
+  </form>
+</div>

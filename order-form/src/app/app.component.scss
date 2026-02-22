@@ -1,0 +1,9 @@
+// App component styling is minimal
+// All styles are scoped in component-specific files
+
+::ng-deep {
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+  }
+}

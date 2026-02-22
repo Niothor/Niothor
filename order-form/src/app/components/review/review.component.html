@@ -1,0 +1,68 @@
+<div class="review-container" *ngIf="order">
+  <h3>Ανασκόπηση Παραγγελίας</h3>
+
+  <div *ngIf="!submitted" class="review-content">
+    <!-- Customer Information -->
+    <div class="review-section">
+      <h4>👤 Προσωπικά Στοιχεία</h4>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Ονοματεπώνυμο:</span>
+          <span class="value">{{ order.customer.fullName }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Διεύθυνση:</span>
+          <span class="value">{{ order.customer.address }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Τηλέφωνο:</span>
+          <span class="value">{{ order.customer.phone }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Information -->
+    <div class="review-section">
+      <h4>📦 Επιλεγμένο Προϊόν</h4>
+      <div class="product-review">
+        <div class="product-image">
+          <img [src]="order.product.image" [alt]="order.product.name">
+        </div>
+        <div class="product-details">
+          <p><strong>{{ order.product.name }}</strong></p>
+          <p>{{ order.product.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dimensions -->
+    <div class="review-section">
+      <h4>📐 Διαστάσεις</h4>
+      <div class="dimensions-grid">
+        <div *ngFor="let dimension of order.product.dimensions" class="dimension-item">
+          <span class="label">{{ dimension.label }}:</span>
+          <span class="value">{{ order.dimensions[dimension.id] }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button mat-raised-button (click)="onBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Πίσω
+      </button>
+      <button mat-raised-button color="primary" (click)="onSubmit()">
+        <mat-icon>check_circle</mat-icon>
+        Υποβολή Παραγγελίας
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="submitted" class="success-message">
+    <mat-icon>check_circle</mat-icon>
+    <h3>Επιτυχία!</h3>
+    <p>Η παραγγελία σας έχει υποβληθεί με επιτυχία.</p>
+    <p class="reference">Αναφορά παραγγελίας: #{{ orderRef | number:'6.0-0' }}</p>
+  </div>
+</div>
